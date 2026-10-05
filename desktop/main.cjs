@@ -244,7 +244,11 @@ function configureMenu() {
     ] },
     { label: 'Edición', submenu: [{ role: 'undo', label: 'Deshacer' }, { role: 'redo', label: 'Rehacer' }, { type: 'separator' }, { role: 'cut', label: 'Cortar' }, { role: 'copy', label: 'Copiar' }, { role: 'paste', label: 'Pegar' }, { role: 'selectAll', label: 'Seleccionar todo' }] },
     { label: 'Vista', submenu: [{ role: 'reload', label: 'Recargar' }, { role: 'resetZoom', label: 'Tamaño original' }, { role: 'zoomIn', label: 'Acercar' }, { role: 'zoomOut', label: 'Alejar' }, { role: 'togglefullscreen', label: 'Pantalla completa' }] },
-    { label: 'Ayuda', submenu: [{ label: 'Acerca de EscuchaInterna', click: () => dialog.showMessageBox(window, { type: 'info', title: 'EscuchaInterna', message: `EscuchaInterna ${app.getVersion()}`, detail: `Aplicación local de código abierto. Los datos de la consulta se guardan en esta PC.\n\nCarpeta de datos: ${workspace}` }) }] },
+    { label: 'Ayuda', submenu: [
+      { label: 'Guía de uso en PC', accelerator: 'F1', click: () => { if (!busy) void window.loadURL(`${server.origin}/ayuda`); } },
+      { type: 'separator' },
+      { label: 'Acerca de EscuchaInterna', click: () => dialog.showMessageBox(window, { type: 'info', title: 'EscuchaInterna', message: `EscuchaInterna ${app.getVersion()}`, detail: `Aplicación local de código abierto. Los datos de la consulta se guardan en esta PC.\n\nCarpeta de datos: ${workspace}` }) },
+    ] },
   ]));
 }
 

@@ -4,6 +4,7 @@ import { endOfDay, format, parseISO, startOfDay } from 'date-fns';
 import { es } from 'date-fns/locale';
 import {
   ArrowRight,
+  BookOpen,
   CalendarCheck2,
   CalendarDays,
   Clock,
@@ -219,6 +220,7 @@ export default async function InicioPage() {
   await forbidProfessorRole();
   // El asistente no ve las métricas de ingresos del titular: su inicio es /agenda.
   const ownerUserId = await forbidAssistantRole();
+  const desktopEdition = isDesktopEdition();
 
   // Checklist de primeros pasos: visible hasta que se completa o se oculta.
   const onboarding = await getOnboardingState(ownerUserId);
@@ -268,7 +270,11 @@ export default async function InicioPage() {
         </p>
       </div>
 
-      {showOnboarding ? <OnboardingChecklist state={onboarding} /> : null}
+      {showOnboarding && !desktopEdition ? <OnboardingChecklist state={onboarding} /> : null}
+
+      {desktopEdition ? <nav aria-label="Acciones de tu consulta" className="mb-6 grid gap-3 sm:grid-cols-3">
+        {[{ href: '/pacientes/nuevo', title: 'Nuevo paciente', description: 'Abre su expediente', icon: UserPlus }, { href: `/agenda?vista=dia&fecha=${todayIso}`, title: 'Agenda de hoy', description: 'Consulta y organiza tus sesiones', icon: CalendarDays }, { href: '/biblioteca', title: 'Biblioteca', description: 'Lecturas y recursos de consulta', icon: BookOpen }].map(({ href, title, description, icon: Icon }) => <Link key={href} href={href} className="ei-option flex items-center gap-3 rounded-card border border-line bg-surface p-4"><span className="ei-icon-tile"><Icon size={18} /></span><span><span className="block text-sm font-semibold">{title}</span><span className="block text-xs text-ink-soft">{description}</span></span></Link>)}
+      </nav> : null}
 
       {!isDesktopEdition() ? <Link
         href="/configuracion/suscripcion"
@@ -288,8 +294,10 @@ export default async function InicioPage() {
 
       <TodayAgenda bookings={todayBookings} todayIso={todayIso} />
 
+      {showOnboarding && desktopEdition ? <OnboardingChecklist state={onboarding} compact /> : null}
+
       {!metrics.hasAnyBookings ? (
-        <EmptyState
+        desktopEdition ? <p className="text-sm text-ink-soft">Cuando registres sesiones, aquí aparecerá tu resumen mensual de actividad y pagos.</p> : <EmptyState
           title="Sin datos"
           description="Parece que todavía no hay actividad. Cuando registres sesiones en la agenda, aquí verás tus ingresos, sesiones y pacientes del mes."
           action={

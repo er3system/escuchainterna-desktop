@@ -147,7 +147,7 @@ export default async function ConfiguracionPage() {
     ...(assistantView ? ASSISTANT_LINKS : professorView ? PROFESSOR_LINKS : SETTINGS_LINKS),
   ]
     .filter((link) => !desktopEdition || link.href !== '/configuracion/suscripcion')
-    .map((link) => desktopEdition && link.href === '/configuracion/integraciones' ? { ...link, description: 'Estado local y servicios que requieren un proveedor externo.' } : desktopEdition && link.href === '/configuracion/perfil' ? { ...link, description: 'Tu nombre, foto, datos de contacto y tarifas de la consulta local.' } : link);
+    .map((link) => desktopEdition && link.href === '/configuracion/integraciones' ? { ...link, title: 'Servicios opcionales', description: 'Activa correo o IA con tu propia clave y revisa qué requiere conexión.' } : desktopEdition && link.href === '/configuracion/perfil' ? { ...link, description: 'Tu nombre, foto, datos de contacto y tarifas de la consulta local.' } : link);
 
   // Guía de almacenamiento: solo para roles con cartera propia (no asistente/profesor, que
   // no suben adjuntos). Admin = sin límite. El plan resuelve la cuota (default 15 GB).

@@ -8,9 +8,17 @@ import type { OnboardingState } from './onboarding';
  * marcan solos al cumplirse (perfil, agenda, paciente, sesión, tutorial). Se
  * oculta sola al completarse todo, o con el botón "ocultar".
  */
-export function OnboardingChecklist({ state }: { state: OnboardingState }) {
+export function OnboardingChecklist({ state, compact = false }: { state: OnboardingState; compact?: boolean }) {
   const { steps, doneCount, total } = state;
   const percent = Math.round((doneCount / total) * 100);
+
+  if (compact) return <section className="mb-6 flex items-start gap-3 rounded-card border border-line bg-surface p-4">
+    <details className="min-w-0 flex-1">
+      <summary className="cursor-pointer text-sm font-semibold text-ink">Primeros pasos · {doneCount} de {total} listos<span className="mt-1 block text-xs font-normal text-ink-soft">Abre la guía cuando quieras completar tu consulta.</span></summary>
+      <ul className="mt-4 space-y-3">{steps.filter(step => !step.done).map(step => <li key={step.key} className="flex flex-wrap items-center justify-between gap-2 border-t border-line pt-3"><span><span className="block text-sm font-medium">{step.label}</span><span className="block text-xs text-ink-soft">{step.hint}</span></span><Link href={step.href} className="inline-flex items-center gap-1 text-sm font-semibold text-accent-strong">{step.cta}<ArrowRight size={13} /></Link></li>)}</ul>
+    </details>
+    <form action={dismissOnboardingAction}><button type="submit" aria-label="Ocultar primeros pasos" className="rounded-lg p-1.5 text-ink-soft hover:bg-bg"><X size={16} /></button></form>
+  </section>;
 
   return (
     <div className="mb-6 rounded-card border border-primary/30 dark:border-accent-2/25 bg-primary-light/30 dark:bg-primary/15 p-5 shadow-card">

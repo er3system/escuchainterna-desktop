@@ -14,7 +14,7 @@ Desde 0.4.0 el registro permite elegir **Solo en esta PC** o **Preparar Google D
 
 ## Servicios opcionales con claves propias
 
-En **Configuración → Integraciones**, conecta **Resend** para enviar correo, **OpenAI** para el chat o **Anthropic** para el chat y las herramientas clínicas. Introduce tu clave API, remitente o modelo y autoriza el tratamiento necesario. Las claves se cifran por cuenta, no vuelven al navegador y están incluidas en los respaldos y versiones cifradas de Drive. La configuración no afirma haber validado saldo o acceso: se comprueban al usar el servicio.
+En **Servicios opcionales** —también dentro de Configuración—, conecta **Resend** para enviar correo, **OpenAI** para el chat o **Anthropic** para el chat y las herramientas clínicas. Introduce tu clave API, remitente o modelo y autoriza el tratamiento necesario. Las claves se cifran por cuenta, no vuelven al navegador y están incluidas en los respaldos y versiones cifradas de Drive. La configuración no afirma haber validado saldo o acceso: se comprueban al usar el servicio.
 
 Los proveedores requieren internet y facturan directamente a tu cuenta. Sin clave, la consulta conserva el modo local; los correos sin proveedor quedan como registros sin enviar. Resend requiere un remitente de un dominio verificado. OpenAI usa Responses con `store: false`; su integración cubre el chat, mientras las herramientas de notas e informes siguen locales salvo que conectes Anthropic. Una suscripción de ChatGPT no incluye el uso de su API.
 
@@ -27,6 +27,10 @@ El respaldo inicial admite hasta 256 MiB de datos antes de comprimir. Conserva s
 Elige modo **Día**, **Noche** o **Automático**, con las paletas Bosque, Salvia, Jardín, Océano, Lavanda y Terracota. Se combinan colores de acción y acentos con superficies neutras. La bienvenida y **Configuración → Apariencia** guardan tu elección en este equipo. Las transiciones respetan el movimiento reducido de Windows y se pueden desactivar.
 
 Desde 0.5.0 el menú agrupa las secciones por tarea. **Ctrl+K** abre el buscador de secciones; la banda superior muestra tu ubicación y permite volver a la sección principal. Sincronización y servicios opcionales tienen acceso directo.
+
+En 0.6.0, al abrir el programa con una sesión válida accedes directamente a tu espacio según tu rol; si falta la configuración inicial, se conserva el onboarding. Inicio pone **Nuevo paciente**, **Agenda de hoy** y **Biblioteca** a mano, y deja los primeros pasos en una guía desplegable debajo de la agenda. Comunicación se despliega al usarla. Ctrl+K también encuentra acciones y funciona con el menú móvil cerrado. La IA conserva su sección y deja libre el contenido al retirar el botón flotante en PC.
+
+**Ayuda → Guía de uso en PC**, también con **F1**, explica respaldos, Drive, catálogos, servicios y atajos. Los tutoriales describen citas locales y distinguen registros pendientes de envíos reales. El lector de libros conserva los filtros y la página al volver al catálogo; una página fuera del rango vuelve a la última válida. Consulta [las decisiones de producto](docs/desktop-product-review.md).
 
 ## Catálogos locales
 

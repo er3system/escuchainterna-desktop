@@ -25,6 +25,10 @@ import { ProductInVivo } from '@/components/landing/ProductInVivo';
 import { PrelaunchBanner } from '@/components/landing/PrelaunchBanner';
 import { DesktopHome } from '@/components/DesktopHome';
 import { isDesktopEdition } from '@/shared/infrastructure/config/desktopEdition';
+import { redirect } from 'next/navigation';
+import { createIdentityUseCases } from '@/contexts/identity/infrastructure/createIdentityUseCases';
+import { homePathForRole } from '@/contexts/identity/domain/value-objects/UserRole';
+import { SqlitePractitionerProfileRepository } from '@/contexts/practitioner/infrastructure/persistence/SqlitePractitionerProfileRepository';
 
 const WEB_METADATA: Metadata = {
   title: 'EscuchaInterna — El todo-en-uno para potenciar tu práctica como psicólogo',
@@ -41,7 +45,16 @@ export function generateMetadata(): Metadata {
 
 export default async function Home() {
   const userId = await getSessionUserId();
-  if (isDesktopEdition()) return <DesktopHome authenticated={Boolean(userId)} />;
+  if (isDesktopEdition()) {
+    if (userId) {
+      const context = await createIdentityUseCases().getSessionContext.get(userId);
+      if (context && context.status !== 'suspendido') {
+        const profile = await new SqlitePractitionerProfileRepository().findByUserId(userId);
+        redirect(context.isReception ? '/recepcion' : homePathForRole(context.role, profile?.onboardingCompleted ?? false));
+      }
+    }
+    return <DesktopHome authenticated={false} />;
+  }
   const dark = (await cookies()).get('ei-theme')?.value === 'dark';
 
   return (

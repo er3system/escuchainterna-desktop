@@ -12,8 +12,8 @@ const ACCENTS: Record<Accent, { panel: string; icon: string; dot: string }> = {
   warning: { panel: 'bg-warning-soft', icon: 'text-warning', dot: 'bg-warning' },
 };
 
-export function TutorialPlayer({ tutorialId }: { tutorialId: string }) {
-  const tutorial = findTutorial(tutorialId);
+export function TutorialPlayer({ tutorialId, desktopEdition = false }: { tutorialId: string; desktopEdition?: boolean }) {
+  const tutorial = findTutorial(tutorialId, desktopEdition);
   const [step, setStep] = useState(0);
   const [done, setDone] = useState(false);
   const [, startTransition] = useTransition();

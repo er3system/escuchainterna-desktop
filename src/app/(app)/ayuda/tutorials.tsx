@@ -19,6 +19,7 @@ import {
   Palette,
   Send,
   ListChecks,
+  ShieldCheck,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -220,6 +221,36 @@ export const TUTORIALS: Tutorial[] = [
   },
 ];
 
-export function findTutorial(id: string): Tutorial | undefined {
-  return TUTORIALS.find((tutorial) => tutorial.id === id);
+const DESKTOP_COPY: Record<string, { subtitle?: string; steps: Record<number, Partial<TutorialStep>> }> = {
+  bienvenida: { steps: {
+    2: { title: 'Respalda tu consulta', body: 'En Archivo › Crear respaldo cifrado puedes guardar una copia de tu consulta. En Sincronización puedes publicar una versión para continuar en otra PC con Drive. Conserva la contraseña que elegiste.', icon: ShieldCheck },
+    3: { body: 'En Pacientes › Nuevo registras a quien atiendes. Con eso puedes abrir su expediente y agendarle. Los avisos reales por correo necesitan un proveedor configurado.' },
+  } },
+  agenda: { subtitle: 'Organiza tus sesiones y disponibilidad desde esta PC.', steps: {
+    0: { body: 'En Agenda › Configuración eliges los días y horas en que recibes, la duración de las sesiones y los descansos. Estos ajustes organizan tu agenda local.' },
+    1: { title: 'Agenda desde esta PC', body: 'Abre la agenda y crea una cita en el horario elegido. Selecciona el paciente y el tipo de sesión. Las direcciones locales del programa solo funcionan en esta PC; no ofrecen reservas públicas por Internet.', icon: CalendarDays },
+    3: { body: 'Bloquea espacios para almuerzo, pendientes o vacaciones, y reagenda una cita arrastrándola. Los avisos quedan registrados; enviar correo real requiere Resend configurado y conexión.' },
+  } },
+  pagos: { subtitle: 'Registra lo cobrado y lo pendiente de tu consulta.', steps: {
+    1: { title: 'Revisa los pagos pendientes', body: 'El panel de Pagos permite revisar lo pendiente y solicitar recordatorios. Sin proveedor, son registros locales sin enviar. El correo real requiere tu clave; los cobros automáticos y ligas de pago necesitan una integración adicional.' },
+  } },
+  mensajes: { subtitle: 'Distingue los registros locales de los correos enviados con tu proveedor.', steps: {
+    0: { title: 'Recordatorios y conexión', body: 'Desde la agenda puedes solicitar un recordatorio. El envío real necesita tu proveedor y conexión. Sin clave, queda como registro local sin enviar. El programa no ejecuta recordatorios cuando está cerrado.' },
+    1: { body: 'En Mensajes › Plantillas eliges el tema visual y personalizas cada plantilla. La vista previa muestra el diseño; el envío depende del proveedor que hayas configurado.' },
+    2: { body: 'En Marketing eliges destinatarios, escribes el mensaje y revisas su vista previa. Para enviar correo real, conecta Resend con tu propia clave y autoriza el tratamiento indicado. Las automatizaciones se revisan al abrir Marketing.' },
+    3: { body: 'Mensajes registra los intentos y su estado. Revisa cuáles están pendientes, tienen errores o fueron enviados. Un registro local sin proveedor no confirma que el paciente haya recibido un mensaje.' },
+  } },
+};
+
+export function tutorialsForEdition(desktopEdition = false): Tutorial[] {
+  if (!desktopEdition) return TUTORIALS;
+  return TUTORIALS.map(tutorial => {
+    const copy = DESKTOP_COPY[tutorial.id];
+    if (!copy) return tutorial;
+    return { ...tutorial, subtitle: copy.subtitle ?? tutorial.subtitle, steps: tutorial.steps.map((step, index) => ({ ...step, ...copy.steps[index] })) };
+  });
+}
+
+export function findTutorial(id: string, desktopEdition = false): Tutorial | undefined {
+  return tutorialsForEdition(desktopEdition).find((tutorial) => tutorial.id === id);
 }

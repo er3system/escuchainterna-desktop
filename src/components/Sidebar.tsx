@@ -24,6 +24,7 @@ import {
   Palette,
   Cloud,
   Plug,
+  ChevronDown,
   type LucideIcon,
 } from 'lucide-react';
 import { NotificationsBell } from '@/components/NotificationsBell';
@@ -154,6 +155,10 @@ export function Sidebar({
   }
   const activeHref = items.filter(item => pathname === item.href || pathname.startsWith(`${item.href}/`)).sort((a, b) => b.href.length - a.href.length)[0]?.href;
   const groups = desktopEdition ? [...new Set(items.map(item => navigationGroup(item.href)))].map(label => ({ label, items: items.filter(item => navigationGroup(item.href) === label) })) : [{ label: 'Tu espacio de trabajo', items }];
+  const destinations = items.map(item => ({ href: item.href, label: item.label, group: navigationGroup(item.href) }));
+  if (items.some(item => item.href === '/pacientes')) destinations.unshift({ href: '/pacientes/nuevo', label: 'Nuevo paciente', group: 'Acciones' });
+  if (items.some(item => item.href === '/agenda')) destinations.unshift({ href: '/agenda?vista=dia', label: 'Agenda de hoy', group: 'Acciones' });
+  if (desktopEdition) destinations.push({ href: '/configuracion/apariencia', label: 'Cambiar apariencia', group: 'Tu aplicación' });
   const home =
     role === 'professor'
       ? '/supervision'
@@ -285,18 +290,17 @@ export function Sidebar({
           </div>
         ) : null}
       </div>
-      {desktopEdition ? <div className="px-3 pt-3"><QuickNavigation destinations={items.map(item => ({ href: item.href, label: item.label, group: navigationGroup(item.href) }))} /></div> : null}
+      {desktopEdition ? <div className="px-3 pt-2"><QuickNavigation destinations={destinations} /></div> : null}
       <nav aria-label="Secciones" className="min-h-0 flex-1 overflow-y-auto px-3 py-3">
-        {groups.map(group => <div key={group.label} data-nav-group={group.label} className="ei-nav-group mb-3 space-y-0.5">
-        <p className="px-3 pb-1.5 pt-1 text-[10px] font-semibold uppercase tracking-[0.15em] text-ink-soft">{group.label}</p>
-        {group.items.map(({ href, label, icon: Icon }) => {
+        {groups.map(group => {
+        const links = group.items.map(({ href, label, icon: Icon }) => {
           const active = activeHref === href;
           return (
             <Link
               key={href}
               href={href}
               aria-current={active ? 'page' : undefined}
-              className={`ei-nav-link flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
+              className={`ei-nav-link flex items-center gap-3 rounded-xl px-3 ${desktopEdition ? 'py-2' : 'py-2.5'} text-sm font-medium transition-colors ${
                 active
                   ? 'ei-nav-active bg-primary-light text-primary'
                   : 'text-ink-soft hover:bg-bg hover:text-ink'
@@ -306,7 +310,12 @@ export function Sidebar({
               {label}
             </Link>
           );
-        })}</div>)}
+        });
+        return desktopEdition && group.label === 'Comunicación' ? <details key={group.label} data-nav-group={group.label} open={group.items.some(item => item.href === activeHref)} className="ei-nav-group group mb-2">
+          <summary className="ei-option flex cursor-pointer list-none items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold text-ink-soft">Comunicación<ChevronDown size={14} className="transition-transform group-open:rotate-180" aria-hidden="true" /></summary>
+          <div className="space-y-0.5">{links}</div>
+        </details> : <div key={group.label} data-nav-group={group.label} className="ei-nav-group mb-2 space-y-0.5"><p className="px-3 pb-1 pt-1 text-[10px] font-semibold uppercase tracking-[0.15em] text-ink-soft">{group.label}</p>{links}</div>;
+        })}
       </nav>
       <div className="px-3 pb-1">
         <Link href="/configuracion/apariencia" className="ei-option flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium text-ink-soft hover:bg-bg hover:text-ink"><Palette size={16} /> Apariencia</Link>
@@ -320,7 +329,7 @@ export function Sidebar({
           </button>
         </form>
       </div>
-      <div className="border-t border-line px-6 py-4 text-xs text-ink-soft">
+      <div className="border-t border-line px-6 py-2 text-xs text-ink-soft">
         {trialDaysLeft !== null ? (
           // Acceso directo a Mi suscripción desde el contador del trial (v3 §10).
           <Link

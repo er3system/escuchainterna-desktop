@@ -69,13 +69,13 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       />
       <main id="workspace-content" tabIndex={-1} className="ei-workspace min-h-screen px-4 pb-6 pt-[4.5rem] md:ml-60 md:px-8 md:pt-6">
         <ImpersonationBanner />
-        {desktopEdition ? <DesktopStatusBanner /> : emailUnverified ? <EmailVerificationBanner /> : null}
+        {desktopEdition ? <DesktopStatusBanner homeHref={context.isReception ? '/recepcion' : context.isAssistant ? '/agenda' : context.role === 'professor' ? '/supervision' : '/inicio'} /> : emailUnverified ? <EmailVerificationBanner /> : null}
         <WorkspaceTransition>{children}</WorkspaceTransition>
       </main>
       {/* El Asistente IA queda fuera del alcance del rol asistente (v3 §4) y del
           profesor (supervisa, no atiende; pisa este layout en biblioteca y
           configuración — sin este gate veía el botón flotante del asistente). */}
-      {context.isAssistant || context.role === 'professor' ? null : <AssistantLauncher />}
+      {desktopEdition || context.isAssistant || context.role === 'professor' ? null : <AssistantLauncher />}
     </div>
     </ToastProvider>
     </div>

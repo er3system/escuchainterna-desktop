@@ -2,31 +2,37 @@ import Link from 'next/link';
 import { ArrowRight, BookOpen, Check, Clock } from 'lucide-react';
 import { PageHeader } from '@/components/ui';
 import { requireSessionUserId } from '@/shared/infrastructure/auth/session';
-import { TUTORIALS } from './tutorials';
+import { tutorialsForEdition } from './tutorials';
 import { readCompletedTutorials } from './helpProgress';
+import { isDesktopEdition } from '@/shared/infrastructure/config/desktopEdition';
+import { DesktopQuickGuide } from '@/components/desktop/DesktopQuickGuide';
 
 export const metadata = { title: 'Ayuda · EscuchaInterna' };
 
 export default async function AyudaPage() {
   const userId = await requireSessionUserId();
+  const desktopEdition = isDesktopEdition();
+  const tutorials = tutorialsForEdition(desktopEdition);
   const completed = new Set(await readCompletedTutorials(userId));
-  const doneCount = TUTORIALS.filter((tutorial) => completed.has(tutorial.id)).length;
-  const percent = Math.round((doneCount / TUTORIALS.length) * 100);
+  const doneCount = tutorials.filter((tutorial) => completed.has(tutorial.id)).length;
+  const percent = Math.round((doneCount / tutorials.length) * 100);
 
   return (
     <div>
       <PageHeader
         title="Ayuda"
-        subtitle="Tutoriales cortos e interactivos para sacarle todo el provecho a EscuchaInterna. Avanza a tu ritmo."
+        subtitle={desktopEdition ? 'Respaldo, sincronización, lecturas y atajos para tu consulta local.' : 'Tutoriales cortos e interactivos para sacarle todo el provecho a EscuchaInterna. Avanza a tu ritmo.'}
       />
+
+      {desktopEdition ? <><DesktopQuickGuide /><h2 className="mb-4 font-display text-xl font-bold">Tutoriales de consulta</h2></> : null}
 
       {/* Progreso general */}
       <div className="mb-6 rounded-card border border-line bg-surface p-5 shadow-card">
         <div className="flex items-end justify-between gap-3">
           <p className="text-sm font-semibold text-ink">
-            {doneCount === TUTORIALS.length
+            {doneCount === tutorials.length
               ? '¡Completaste todos los tutoriales! 🎉'
-              : `${doneCount} de ${TUTORIALS.length} tutoriales completados`}
+              : `${doneCount} de ${tutorials.length} tutoriales completados`}
           </p>
           <span className="text-sm font-bold text-primary dark:text-accent-2">{percent}%</span>
         </div>
@@ -40,7 +46,7 @@ export default async function AyudaPage() {
 
       {/* Tarjetas de tutoriales */}
       <div className="grid gap-4 sm:grid-cols-2">
-        {TUTORIALS.map((tutorial) => {
+        {tutorials.map((tutorial) => {
           const isDone = completed.has(tutorial.id);
           const Icon = tutorial.icon;
           return (
