@@ -105,6 +105,34 @@ fs.cpSync(standalone, server, { recursive: true, filter: file => {
 fs.cpSync(path.join(source, '.next-desktop', 'static'), path.join(server, '.next-desktop', 'static'), { recursive: true });
 fs.cpSync(path.join(source, 'public'), path.join(server, 'public'), { recursive: true });
 fs.cpSync(path.join(source, 'data'), path.join(server, 'data'), { recursive: true, filter: file => !/\.db(?:-(?:wal|shm|journal))?$/.test(file) });
+// File tracing omits many license texts. Preserve every root and bundled license
+// belonging to packages that actually ship with the standalone server.
+const licenseTexts = new Map();
+const dependencyRoot = path.join(server, 'node_modules');
+function collectLicenses(directory) {
+  for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+    const target = path.join(directory, entry.name);
+    if (entry.isDirectory()) collectLicenses(target);
+    else if (entry.name === 'package.json') {
+      const relative = path.relative(dependencyRoot, directory);
+      const original = path.join(source, 'node_modules', relative);
+      if (!fs.existsSync(original)) continue;
+      function readLicenses(folder) {
+        for (const candidate of fs.readdirSync(folder, { withFileTypes: true })) {
+          const file = path.join(folder, candidate.name);
+          if (candidate.isDirectory() && candidate.name !== 'node_modules') readLicenses(file);
+          else if (candidate.isFile() && /^(licen[cs]e|notice|copying)(?:\.|$)/i.test(candidate.name)) {
+            const location = path.relative(path.join(source, 'node_modules'), file);
+            if (!licenseTexts.has(location)) licenseTexts.set(location, `\n===== ${location} =====\n${fs.readFileSync(file, 'utf8')}\n`);
+          }
+        }
+      }
+      readLicenses(original);
+    }
+  }
+}
+if (fs.existsSync(dependencyRoot)) collectLicenses(dependencyRoot);
+fs.writeFileSync(path.join(resources, 'DEPENDENCY_LICENSES.txt'), [...licenseTexts.values()].join('\n'));
 const runtime = await downloadNode();
 const metadata = { app: 'EscuchaInterna', version: JSON.parse(fs.readFileSync(path.join(root, 'desktop', 'package.json'))).version, builtAt: new Date().toISOString(), runtime, privateDataIncluded: false, catalogsIncluded: false };
 fs.writeFileSync(path.join(resources, 'build-info.json'), JSON.stringify(metadata, null, 2));

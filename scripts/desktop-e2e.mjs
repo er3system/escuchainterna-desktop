@@ -59,8 +59,12 @@ try {
   assert.match(anonymousPage.url(), /\/login/);
   const secondContext = await browser.newContext();
   const second = await register(secondContext, 'Otro profesional de prueba', 'segundo@desktop.example.test');
-  const denied = await second.goto(`${server.origin}/pacientes/${patient.id}`);
-  assert.equal(denied.status(), 404, 'Una segunda cuenta no puede leer el expediente ajeno');
+  await second.goto(`${server.origin}/pacientes/${patient.id}`, { waitUntil: 'networkidle' });
+  // Next puede haber enviado HTTP 200 antes de completar una respuesta en streaming.
+  // La frontera real es la pantalla not-found y la ausencia de cualquier dato ajeno.
+  await second.getByRole('heading', { name: '404', exact: true }).waitFor();
+  assert.equal(await second.getByText('Paciente ficticio del smoke', { exact: true }).count(), 0);
+  assert.equal(await second.getByText('Texto ficticio para comprobar el cifrado', { exact: true }).count(), 0);
   await runtime.stopServer(server.child);
   server = await runtime.startServer(options);
   await first.goto(`${server.origin}/pacientes/${patient.id}`, { waitUntil: 'networkidle' });
