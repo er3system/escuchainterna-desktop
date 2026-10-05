@@ -30,7 +30,7 @@ try {
   page.on('request', request => { if (!request.url().startsWith('http://127.0.0.1:3117') && !request.url().startsWith('data:')) externalRequests.push(new URL(request.url()).hostname); });
   const response = await page.goto('http://127.0.0.1:3117', { waitUntil: 'networkidle' });
   assert.equal(response.status(), 200);
-  assert.match(await page.title(), /Libre y abierta/);
+  assert.match(await page.title(), /Gestión de consulta para Windows/);
   assert.equal(await page.locator('h1').count(), 1);
   assert.equal(await page.locator('a[href="https://ko-fi.com/laroc"]').count(), 3);
   assert(await page.locator('[aria-labelledby="hero-title"]').getByRole('link', { name: 'Descargar para Windows', exact: true }).getAttribute('href').then(href => href.includes('releases/tag/v0.7.1')));
@@ -56,11 +56,11 @@ try {
   await appearance.getByRole('button', { name: 'Noche', exact: true }).click();
   assert.equal(await appearance.locator('[data-preview-dark]').getAttribute('data-preview-dark'), 'true');
   await appearance.getByRole('button', { name: 'Pagos', exact: true }).click();
-  assert(await appearance.getByRole('heading', { name: 'Pagos con perspectiva.' }).isVisible());
+  assert(await appearance.getByRole('heading', { name: 'Registro de pagos' }).isVisible());
   await appearance.screenshot({ path: path.join(output, 'themes.png'), animations: 'disabled' });
   assert.equal(await appearance.locator('[data-preview-dark]').evaluate(element => getComputedStyle(element).color), 'rgb(229, 239, 228)');
   checks.push('Seis paletas, día/noche y navegación de la demostración');
-  await page.locator('#preguntas summary').filter({ hasText: '¿Es gratis de verdad?' }).click();
+  await page.locator('#preguntas summary').filter({ hasText: '¿El programa es gratuito?' }).click();
   assert(await page.getByText('El apoyo en Ko-fi es voluntario.', { exact: false }).isVisible());
   await page.getByRole('button', { name: 'Pausar animaciones' }).click();
   assert.equal(await page.getByRole('button', { name: 'Activar animaciones' }).getAttribute('aria-pressed'), 'true');
@@ -89,7 +89,7 @@ try {
   assert(await staticPage.getByRole('heading', { level: 1 }).isVisible());
   assert(await staticPage.locator('[aria-labelledby="hero-title"]').getByRole('link', { name: 'Descargar para Windows', exact: true }).isVisible());
   await staticPage.locator('#preguntas summary').filter({ hasText: '¿Puedo trabajar sin internet?' }).click();
-  assert(await staticPage.getByText('Sí: agenda, pacientes', { exact: false }).isVisible());
+  assert(await staticPage.getByText('Sí. Puedes consultar la agenda', { exact: false }).isVisible());
   checks.push('Contenido, descarga y preguntas disponibles sin JavaScript');
   assert.deepEqual(errors, []);
   assert.deepEqual(externalRequests, []);

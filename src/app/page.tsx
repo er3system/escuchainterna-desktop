@@ -13,12 +13,12 @@ export function generateMetadata(): Metadata {
     title: 'EscuchaInterna para PC — Tu consulta en tu equipo',
     description: 'Aplicación local de código abierto para organizar la consulta, con cuentas propias y sin suscripción.',
   };
-  const title = 'EscuchaInterna — Tu consulta, en tu PC. Libre y abierta.';
-  const description = 'Organiza agenda, pacientes, expedientes y pagos en Windows. Trabaja sin conexión, elige tus temas y conserva el control de tus datos. Gratis y de código abierto, con licencia MIT.';
+  const title = 'EscuchaInterna — Gestión de consulta para Windows';
+  const description = 'Agenda, pacientes, historias clínicas y pagos en una aplicación para Windows. Funciona sin conexión. Gratuita y de código abierto, con licencia MIT.';
   return {
     title, description,
     alternates: { canonical: 'https://escuchainterna.com' },
-    openGraph: { title, description, url: 'https://escuchainterna.com', siteName: 'EscuchaInterna', locale: 'es_ES', type: 'website', images: [{ url: 'https://escuchainterna.com/showcase/social.png', width: 1200, height: 630, alt: 'EscuchaInterna: tu consulta en tu PC, libre y abierta' }] },
+    openGraph: { title, description, url: 'https://escuchainterna.com', siteName: 'EscuchaInterna', locale: 'es_ES', type: 'website', images: [{ url: 'https://escuchainterna.com/showcase/social.png', width: 1200, height: 630, alt: 'EscuchaInterna: gestión de consulta para Windows' }] },
     twitter: { card: 'summary_large_image', title, description },
   };
 }
