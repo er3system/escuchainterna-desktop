@@ -46,6 +46,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <div id="app-shell">
+    <a href="#workspace-content" className="ei-skip-link">Saltar al contenido</a>
     <ToastProvider>
     <div className="min-h-screen bg-bg">
       <Sidebar
@@ -66,7 +67,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         initialDark={dark}
         desktopEdition={desktopEdition}
       />
-      <main className="ei-workspace min-h-screen px-4 pb-6 pt-[4.5rem] md:ml-60 md:px-8 md:pt-6">
+      <main id="workspace-content" tabIndex={-1} className="ei-workspace min-h-screen px-4 pb-6 pt-[4.5rem] md:ml-60 md:px-8 md:pt-6">
         <ImpersonationBanner />
         {desktopEdition ? <DesktopStatusBanner /> : emailUnverified ? <EmailVerificationBanner /> : null}
         <WorkspaceTransition>{children}</WorkspaceTransition>

@@ -3,7 +3,7 @@ import path from 'node:path';
 import { Readable } from 'node:stream';
 import { NextRequest } from 'next/server';
 import { SqliteBookRepository } from '@/contexts/library/infrastructure/persistence/SqliteBookRepository';
-import { libraryRootPath } from '@/contexts/library/infrastructure/filesystem/LibraryFolderScanner';
+import { resolveBookFilePath } from '@/contexts/library/infrastructure/filesystem/BookFilePath';
 import { getActiveAppSessionContext } from '@/shared/infrastructure/auth/dataOwner';
 
 const MIME_BY_EXTENSION: Record<string, string> = {
@@ -27,15 +27,8 @@ export async function GET(
   if (!book) return new Response('Libro no encontrado', { status: 404 });
 
   const primitives = book.toPrimitives();
-  const rootPath = path.resolve(libraryRootPath());
-  const absolutePath = path.resolve(rootPath, primitives.relativePath);
-  const relativePath = path.relative(rootPath, absolutePath);
-  // El catálogo solo contiene rutas dentro de la biblioteca; este check evita escapes.
-  if (
-    relativePath.startsWith('..') ||
-    path.isAbsolute(relativePath) ||
-    !fs.existsSync(absolutePath)
-  ) {
+  const absolutePath = resolveBookFilePath(primitives.relativePath);
+  if (!absolutePath) {
     return new Response('Archivo no disponible', { status: 404 });
   }
 
@@ -52,6 +45,7 @@ export async function GET(
       'Content-Length': String(stat.size),
       'Content-Disposition': `${disposition}; filename*=UTF-8''${safeName}`,
       'Cache-Control': 'private, max-age=3600',
+      'X-Content-Type-Options': 'nosniff',
     },
   });
 }

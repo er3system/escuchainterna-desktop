@@ -30,9 +30,10 @@ export function publicationsManifestExists(): boolean {
 
 /** Raíces permitidas para los archivos de las publicaciones (HTML y PDF). */
 function allowedAssetRoots(): string[] {
+  const base = path.resolve(process.env.PUBLICACIONES_ROOT_PATH ?? process.cwd());
   return [
-    path.resolve(process.cwd(), './data/publicaciones-src'),
-    path.resolve(process.cwd(), './data/publicaciones'),
+    path.resolve(base, './data/publicaciones-src'),
+    path.resolve(base, './data/publicaciones'),
   ];
 }
 
@@ -44,9 +45,15 @@ function allowedAssetRoots(): string[] {
  */
 export function resolvePublicationAssetPath(storedPath: string): string | null {
   if (!storedPath || storedPath.trim() === '') return null;
-  const absolute = path.resolve(process.cwd(), storedPath);
-  const insideAllowedRoot = allowedAssetRoots().some((root) => absolute.startsWith(root + path.sep));
-  return insideAllowedRoot ? absolute : null;
+  const base = path.resolve(process.env.PUBLICACIONES_ROOT_PATH ?? process.cwd());
+  const absolute = path.resolve(base, storedPath);
+  const roots = allowedAssetRoots();
+  if (!roots.some(root => absolute.startsWith(root + path.sep))) return null;
+  if (!fs.existsSync(absolute)) return absolute;
+  try {
+    const actual = fs.realpathSync(absolute);
+    return roots.some(root => fs.existsSync(root) && actual.startsWith(fs.realpathSync(root) + path.sep)) && fs.statSync(actual).isFile() ? actual : null;
+  } catch { return null; }
 }
 
 /**

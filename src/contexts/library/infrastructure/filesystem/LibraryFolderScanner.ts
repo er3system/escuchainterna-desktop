@@ -33,6 +33,7 @@ function walk(root: string, dir: string, results: ScannedBookFile[]): void {
       walk(root, fullPath, results);
       continue;
     }
+    if (!entry.isFile()) continue;
     const extension = path.extname(entry.name).toLowerCase();
     if (!INDEXABLE_EXTENSIONS.has(extension)) continue;
     const relativePath = path.relative(root, fullPath).split(path.sep).join('/');

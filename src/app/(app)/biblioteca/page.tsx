@@ -29,6 +29,7 @@ import { requireActiveAppSessionUserId } from '@/shared/infrastructure/auth/data
 import { markPublicationReviewedAction, reloadPublicationCatalogAction } from './actions';
 import { FavoriteButton } from './FavoriteButton';
 import { isDesktopEdition } from '@/shared/infrastructure/config/desktopEdition';
+import { CollectionNavigation } from './CollectionNavigation';
 
 const NORMATIVE_CATEGORY = 'Marcos normativos';
 const formatNumber = new Intl.NumberFormat('es-MX');
@@ -108,6 +109,7 @@ export default async function BibliotecaPage({
 
   return (
     <div>
+      {isDesktopEdition() ? <CollectionNavigation selected="publicaciones" /> : null}
       {/* ---- Hero de la colección ---- */}
       <section className="relative mb-6 overflow-hidden rounded-card bg-gradient-to-br from-primary to-primary-dark p-8 text-white shadow-card">
         <svg
@@ -129,7 +131,7 @@ export default async function BibliotecaPage({
               Colección EscuchaInterna
             </span>
             <h1 className="mt-4 text-3xl font-bold leading-tight">
-              Colección EscuchaInterna — material original para tu práctica
+              Colección EscuchaInterna
             </h1>
             <p className="mt-2 max-w-xl text-sm leading-relaxed text-white/85">
               Modelos terapéuticos, temas clínicos y marcos normativos por país, redactados para la

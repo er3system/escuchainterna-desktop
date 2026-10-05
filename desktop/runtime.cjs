@@ -21,6 +21,10 @@ function databaseFingerprint(resources, databasePath) {
 }
 
 function runtimeEnvironment({ parent = process.env, resources, workspace, port, secrets }) {
+  // Catálogos privados se instalan aparte; no forman parte del respaldo clínico.
+  const catalogs = path.join(path.dirname(workspace), 'catalogos');
+  const localManifest = path.join(catalogs, 'data', 'publicaciones', 'manifest.json');
+  const localCie11 = path.join(catalogs, 'data', 'cie11', 'cie11.json');
   const env = {};
   for (const key of ['PATH', 'SYSTEMROOT', 'SystemRoot', 'WINDIR', 'COMSPEC', 'TEMP', 'TMP', 'APPDATA', 'LOCALAPPDATA', 'USERPROFILE', 'HOMEDRIVE', 'HOMEPATH']) {
     if (typeof parent[key] === 'string') env[key] = parent[key];
@@ -31,9 +35,10 @@ function runtimeEnvironment({ parent = process.env, resources, workspace, port, 
     APP_URL: `http://127.0.0.1:${port}`, NEXT_PUBLIC_APP_URL: `http://127.0.0.1:${port}`,
     DATABASE_PATH: path.join(workspace, 'escuchainterna.db'),
     UPLOADS_PATH: path.join(workspace, 'uploads'),
-    CIE11_DATASET_PATH: path.join(resources, 'server', 'data', 'cie11', 'cie11.json'),
-    PUBLICACIONES_MANIFEST_PATH: path.join(resources, 'server', 'data', 'publicaciones', 'manifest.json'),
-    BIBLIOTECA_PATH: path.join(workspace, 'biblioteca'),
+    CIE11_DATASET_PATH: fs.existsSync(localCie11) ? localCie11 : path.join(resources, 'server', 'data', 'cie11', 'cie11.json'),
+    PUBLICACIONES_MANIFEST_PATH: fs.existsSync(localManifest) ? localManifest : path.join(resources, 'server', 'data', 'publicaciones', 'manifest.json'),
+    PUBLICACIONES_ROOT_PATH: fs.existsSync(localManifest) ? catalogs : path.join(resources, 'server'),
+    BIBLIOTECA_PATH: fs.existsSync(path.join(catalogs, 'biblioteca')) ? path.join(catalogs, 'biblioteca') : path.join(workspace, 'biblioteca'),
     SESSION_SECRET: secrets.SESSION_SECRET, DATA_ENCRYPTION_KEY: secrets.DATA_ENCRYPTION_KEY,
   });
 }

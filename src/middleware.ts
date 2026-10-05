@@ -32,8 +32,11 @@ export function middleware(request: NextRequest) {
 
   const response = NextResponse.next({ request: { headers: requestHeaders } });
 
-  response.headers.set('Content-Security-Policy', CSP);
-  response.headers.set('X-Frame-Options', 'DENY'); // anti-clickjacking (respaldo de frame-ancestors)
+  // El lector incrusta únicamente el endpoint autenticado de archivos. El resto
+  // de la aplicación conserva la prohibición de incrustarse en otras páginas.
+  const libraryFile = /^\/api\/biblioteca\/[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}\/file$/i.test(request.nextUrl.pathname);
+  response.headers.set('Content-Security-Policy', libraryFile ? CSP.replace("frame-ancestors 'none'", "frame-ancestors 'self'") : CSP);
+  response.headers.set('X-Frame-Options', libraryFile ? 'SAMEORIGIN' : 'DENY');
   response.headers.set('X-Content-Type-Options', 'nosniff');
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
   response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), interest-cohort=()');

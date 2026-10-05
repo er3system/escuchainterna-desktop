@@ -24,7 +24,15 @@ El respaldo inicial admite hasta 256 MiB de datos antes de comprimir. Conserva s
 
 ## Apariencia y continuidad entre PCs
 
-Elige modo **Día**, **Noche** o **Automático**, con las paletas Bosque, Océano, Lavanda y Terracota. La bienvenida y **Configuración → Apariencia** guardan tu elección en este equipo. Las transiciones respetan el movimiento reducido de Windows y se pueden desactivar.
+Elige modo **Día**, **Noche** o **Automático**, con las paletas Bosque, Salvia, Jardín, Océano, Lavanda y Terracota. Se combinan colores de acción y acentos con superficies neutras. La bienvenida y **Configuración → Apariencia** guardan tu elección en este equipo. Las transiciones respetan el movimiento reducido de Windows y se pueden desactivar.
+
+Desde 0.5.0 el menú agrupa las secciones por tarea. **Ctrl+K** abre el buscador de secciones; la banda superior muestra tu ubicación y permite volver a la sección principal. Sincronización y servicios opcionales tienen acceso directo.
+
+## Catálogos locales
+
+La biblioteca tiene dos vistas: **Colección EscuchaInterna**, con lector de publicaciones, y **Libros de esta PC**, con categorías, búsqueda y paginación. Los catálogos privados se instalan fuera de la consulta clínica, en `catalogos` junto a la carpeta `workspace` de la instalación. Se instalan aparte en cada PC; no viajan en el respaldo clínico de Drive.
+
+Para instalar catálogos que ya tienes, cierra el programa y ejecuta `node scripts/install-local-catalogs.mjs --books "RUTA_ABSOLUTA_LIBROS" --publications-root "RUTA_ABSOLUTA_PROYECTO_ORIGINAL" --destination "RUTA_ABSOLUTA_DATOS_USUARIO/catalogos"`. Puedes omitir uno de los dos orígenes. El script copia archivos admitidos, valida las rutas, conserva los originales y rechaza sobrescribir contenidos distintos. El origen de publicaciones debe contener su manifest y los archivos referenciados; también puede contener el catálogo CIE-11. Reinicia y pulsa **Actualizar índice** o **Recargar catálogo** si ya había contenidos indexados.
 
 En **Configuración → Sincronización con Drive**, conecta una carpeta de Google Drive para escritorio que esté disponible sin conexión. Usa la misma contraseña en ambas PCs. Publica los cambios al terminar, espera a que Drive los entregue y recibe la versión antes de continuar en la otra PC. Una instalación vacía puede recibir desde **Continuar desde otra PC** o el menú Archivo.
 

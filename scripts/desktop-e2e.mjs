@@ -14,6 +14,13 @@ fs.mkdirSync(buildRoot, { recursive: true });
 const evidence = fs.mkdtempSync(path.join(buildRoot, 'e2e-'));
 const workspace = path.join(evidence, 'workspace');
 fs.mkdirSync(workspace);
+const catalogs = path.join(evidence, 'catalogos');
+fs.mkdirSync(path.join(catalogs, 'biblioteca', 'Clínica'), { recursive: true });
+for (let i = 1; i <= 38; i++) fs.writeFileSync(path.join(catalogs, 'biblioteca', 'Clínica', `Lectura de prueba ${String(i).padStart(2, '0')}.txt`), 'Contenido ficticio de biblioteca, disponible sin red.');
+fs.mkdirSync(path.join(catalogs, 'data', 'publicaciones'), { recursive: true });
+fs.mkdirSync(path.join(catalogs, 'data', 'publicaciones-src', 'html'), { recursive: true });
+fs.writeFileSync(path.join(catalogs, 'data', 'publicaciones-src', 'html', 'publicacion-prueba.html'), '<main class="content"><h1>Lectura de la colección</h1><p>Contenido editorial ficticio sin conexión.</p></main>');
+fs.writeFileSync(path.join(catalogs, 'data', 'publicaciones', 'manifest.json'), JSON.stringify([{ id: 'publicacion-prueba', title: 'Publicación original de prueba', summary: 'Material ficticio.', category: 'Temas clínicos', kind: 'tema', country: '', htmlPath: 'data/publicaciones-src/html/publicacion-prueba.html', pdfPath: '', sources: [] }]));
 const options = {
   resources: path.join(buildRoot, 'resources'), workspace,
   secrets: { SESSION_SECRET: randomBytes(32).toString('hex'), DATA_ENCRYPTION_KEY: randomBytes(32).toString('hex') },
@@ -75,16 +82,19 @@ try {
   };
   for (const mode of ['Día', 'Noche']) {
     await first.getByRole('button', { name: mode, exact: true }).click();
-    for (const palette of [{ name: 'Bosque', id: 'bosque' }, { name: 'Océano', id: 'oceano' }, { name: 'Lavanda', id: 'lavanda' }, { name: 'Terracota', id: 'terracota' }]) {
+    for (const palette of [{ name: 'Bosque', id: 'bosque' }, { name: 'Salvia', id: 'salvia' }, { name: 'Jardín', id: 'jardin' }, { name: 'Océano', id: 'oceano' }, { name: 'Lavanda', id: 'lavanda' }, { name: 'Terracota', id: 'terracota' }]) {
       await first.getByRole('button', { name: new RegExp('^' + palette.name) }).click();
       await first.waitForFunction(id => document.documentElement.dataset.palette === id, palette.id);
       const colors = await first.evaluate(() => {
         const style = getComputedStyle(document.documentElement);
-        return { primary: style.getPropertyValue('--color-primary').trim(), ink: style.getPropertyValue('--color-ink').trim(), surface: style.getPropertyValue('--color-surface').trim(), soft: style.getPropertyValue('--color-ink-soft').trim() };
+        return { primary: style.getPropertyValue('--color-primary').trim(), ink: style.getPropertyValue('--color-ink').trim(), surface: style.getPropertyValue('--color-surface').trim(), soft: style.getPropertyValue('--color-ink-soft').trim(), sidebar: style.getPropertyValue('--ei-sidebar').trim(), accent: style.getPropertyValue('--color-accent-strong').trim() };
       });
       assert.ok(contrast(colors.primary, '#ffffff') >= 4.5, `${palette.name} ${mode}: acción legible`);
       assert.ok(contrast(colors.ink, colors.surface) >= 4.5, `${palette.name} ${mode}: texto legible`);
       assert.ok(contrast(colors.soft, colors.surface) >= 4.5, `${palette.name} ${mode}: texto secundario legible`);
+      assert.ok(contrast(colors.soft, colors.sidebar) >= 4.5, `${palette.name} ${mode}: navegación legible`);
+      assert.ok(contrast(colors.ink, colors.sidebar) >= 4.5, `${palette.name} ${mode}: menú legible`);
+      assert.notEqual(colors.surface, colors.sidebar, 'Menú y tarjetas tienen superficies distintas');
     }
   }
   await first.reload({ waitUntil: 'networkidle' });
@@ -102,6 +112,44 @@ try {
   await first.getByRole('button', { name: 'Día', exact: true }).click();
   await first.getByRole('button', { name: /^Bosque/ }).click();
   await first.screenshot({ path: path.join(evidence, 'apariencia-dia.png'), fullPage: true });
+  await first.getByRole('button', { name: 'Ir a una sección', exact: false }).click();
+  const navigation = first.getByRole('dialog', { name: 'Ir a una sección', exact: true });
+  await navigation.getByRole('searchbox', { name: 'Buscar sección' }).fill('sincroni');
+  assert.equal(await navigation.getByRole('link').count(), 1);
+  await first.keyboard.press('Escape');
+  await navigation.waitFor({ state: 'hidden' });
+  await first.keyboard.press('Control+k');
+  await navigation.waitFor();
+  await navigation.getByRole('searchbox').fill('biblioteca');
+  await navigation.getByRole('link', { name: /Biblioteca/ }).click();
+  await first.waitForURL('**/biblioteca');
+  await first.getByRole('link', { name: 'Publicación original de prueba', exact: true }).click();
+  await first.getByText('Contenido editorial ficticio sin conexión.', { exact: true }).waitFor();
+  await first.goto(`${server.origin}/biblioteca/libros`, { waitUntil: 'networkidle' });
+  await first.getByText('38 archivos · Página 1 de 2', { exact: true }).waitFor();
+  await first.getByRole('link', { name: 'Siguiente', exact: true }).click();
+  await first.getByText('38 archivos · Página 2 de 2', { exact: true }).waitFor();
+  await first.getByRole('searchbox').fill('prueba 38');
+  await first.getByRole('button', { name: 'Buscar libros', exact: true }).click();
+  await first.getByText('1 archivo · Página 1 de 1', { exact: true }).waitFor();
+  await first.getByRole('link', { name: /Lectura de prueba 38/ }).click();
+  const bookFile = await first.locator('iframe').getAttribute('src');
+  assert.ok(bookFile);
+  const fileResponse = await first.context().request.get(`${server.origin}${bookFile}`);
+  assert.equal(fileResponse.status(), 200);
+  assert.equal(fileResponse.headers()['x-frame-options'], 'SAMEORIGIN');
+  assert.match(fileResponse.headers()['content-security-policy'], /frame-ancestors 'self'/);
+  await first.frameLocator('iframe').getByText('Contenido ficticio de biblioteca, disponible sin red.').waitFor();
+  await first.screenshot({ path: path.join(evidence, 'libro-local.png'), fullPage: true });
+  await first.goto(`${server.origin}/biblioteca/libros`, { waitUntil: 'networkidle' });
+  await first.screenshot({ path: path.join(evidence, 'catalogo-local.png'), fullPage: true });
+  await first.setViewportSize({ width: 390, height: 844 });
+  await first.getByRole('button', { name: 'Abrir menú', exact: true }).click();
+  await first.getByRole('button', { name: 'Cerrar menú', exact: true }).waitFor();
+  await first.keyboard.press('Escape');
+  await first.waitForFunction(() => document.querySelector('#workspace-menu')?.inert === true);
+  assert.equal(await first.getByRole('button', { name: 'Abrir menú', exact: true }).evaluate(element => element === document.activeElement), true);
+  await first.setViewportSize({ width: 1440, height: 940 });
   await first.goto(`${server.origin}/configuracion/sincronizacion`, { waitUntil: 'networkidle' });
   await first.getByRole('heading', { name: 'Sincronización con Drive', exact: true }).waitFor();
   await first.getByText('Abre esta pantalla desde el programa de Windows instalado.', { exact: false }).waitFor();
@@ -120,6 +168,7 @@ try {
   db.close();
   const anonymous = await browser.newContext();
   const anonymousPage = await anonymous.newPage();
+  assert.equal((await anonymous.request.get(`${server.origin}${bookFile}`)).status(), 401);
   await anonymousPage.goto(`${server.origin}/pacientes/${patient.id}`);
   assert.match(anonymousPage.url(), /\/login/);
   const secondContext = await browser.newContext();
@@ -139,7 +188,7 @@ try {
   await first.goto(`${server.origin}/pacientes/${patient.id}`, { waitUntil: 'networkidle' });
   await first.getByText('Texto ficticio para comprobar el cifrado', { exact: true }).waitFor();
   assert.equal(errors.length, 0, 'No debe haber errores de JavaScript en el navegador');
-  const result = { ok: true, appearancePalettes: 4, appearanceModes: 3, contrastAA: true, appearancePersistence: true, systemThemeUpdates: true, reducedMotion: true, registration: true, noSubscription: true, patientCreation: true, clinicalEncryption: true, anonymousDenied: true, ownerIsolation: true, persistedAfterRestart: true, browserErrors: errors };
+  const result = { ok: true, appearancePalettes: 6, appearanceModes: 3, contrastAA: true, distinctSurfaces: true, appearancePersistence: true, systemThemeUpdates: true, reducedMotion: true, quickNavigation: true, mobileKeyboardNavigation: true, originalPublications: true, localBookSearchAndPagination: true, offlineBookReader: true, registration: true, noSubscription: true, patientCreation: true, clinicalEncryption: true, anonymousDenied: true, ownerIsolation: true, persistedAfterRestart: true, browserErrors: errors };
   fs.writeFileSync(path.join(evidence, 'result.json'), JSON.stringify(result, null, 2));
   console.log(JSON.stringify({ ...result, evidence }, null, 2));
 } catch (error) {

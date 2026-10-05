@@ -12,6 +12,8 @@ Si conectaste una carpeta local por error, **Archivo → Preparar carpeta en Mi 
 
 Las claves personales de Resend, OpenAI y Anthropic también forman parte de las versiones cifradas del espacio. Quien restaure la consulta con la contraseña podrá usar sus servicios; desconecta y revoca las claves si necesitas retirar ese acceso.
 
+Los catálogos instalados en `catalogos` desde 0.5.0 quedan fuera del espacio clínico: instala sus archivos aparte en cada PC. La base conserva el índice de biblioteca y los favoritos, pero recibir una consulta no descarga sus libros. Esto evita incluir varios GB de lectura en cada versión cifrada.
+
 1. Instala Google Drive para escritorio y crea una carpeta exclusiva, por ejemplo `Mi unidad/EscuchaInterna`. Usa una carpeta reflejada o marca la carpeta como **Disponible sin conexión** en ambas PCs. Espera a que Drive termine de descargar sus archivos.
 2. Abre **Configuración → Sincronización con Drive** o **Archivo → Sincronización con Google Drive**. Selecciona la carpeta y elige una contraseña de al menos 12 caracteres. En la otra PC usa la misma carpeta y contraseña. No es tu contraseña de Google ni la de inicio de sesión de EscuchaInterna.
 3. En la primera PC, guarda los formularios y pulsa **Publicar cambios**. La app detiene brevemente el servidor, comprueba SQLite y escribe una versión cifrada. Google Drive realiza la subida; espera a que su estado indique que terminó.

@@ -232,6 +232,7 @@ function configureMenu() {
   Menu.setApplicationMenu(Menu.buildFromTemplate([
     { label: 'Archivo', submenu: [
       { label: 'Abrir carpeta de datos', click: () => { if (!busy) void shell.openPath(app.getPath('userData')); } },
+      { label: 'Abrir carpeta de catálogos', click: () => { if (!busy) { const folder = path.join(app.getPath('userData'), 'catalogos'); fs.mkdirSync(folder, { recursive: true }); void shell.openPath(folder); } } },
       { label: 'Sincronización con Google Drive…', click: () => { if (!busy) void window.loadURL(`${server.origin}/sincronizacion`); } },
       { label: 'Preparar carpeta en Mi unidad…', click: () => { void useDriveFolder(); } },
       { type: 'separator' },

@@ -182,16 +182,16 @@ export default async function ConfiguracionPage() {
       />
 
       {localData ? (
-        <section className="mb-6 rounded-card border border-primary bg-primary-light p-5">
+        <section className="mb-6 rounded-card border border-line bg-surface p-5">
           <h2 className="flex items-center gap-2 font-semibold text-ink"><HardDrive size={18} /> EscuchaInterna para PC</h2>
           <p className="mt-2 text-sm text-ink">Cuenta local · Sin suscripción · Código abierto con licencia MIT</p>
           <p className="mt-2 text-sm text-ink-soft">Los expedientes se guardan en este equipo. Puedes conectar una carpeta de Drive para publicar y recibir versiones cifradas. Los enlaces de reserva, sesión y firma de esta instalación solo funcionan en esta PC.</p>
-          <dl className="mt-4 space-y-2 text-xs text-ink-soft">
+          <details className="mt-4 text-xs text-ink-soft"><summary className="cursor-pointer font-medium text-accent-strong">Carpetas de datos y respaldos</summary><dl className="mt-3 space-y-2">
             <div><dt className="font-semibold text-ink">Carpeta de la base de datos</dt><dd className="mt-1 break-all font-mono">{localData.databaseDirectory}</dd></div>
             <div><dt className="font-semibold text-ink">Carpeta de archivos adjuntos</dt><dd className="mt-1 break-all font-mono">{localData.uploadsDirectory}</dd></div>
           </dl>
           <p className="mt-4 text-sm text-ink-soft">Usa el menú Archivo para crear o restaurar un respaldo cifrado completo. Conserva el archivo y su contraseña por separado: el respaldo incluye las claves necesarias para restaurar en otra PC.</p>
-          <p className="mt-2 text-xs text-ink-soft">Los servicios de correo, WhatsApp, IA remota, pagos en línea y calendarios necesitan un proveedor configurado y conexión a internet. Sin proveedor, los mensajes quedan como registros locales y los cobros se registran manualmente.</p>
+          <p className="mt-2 text-xs text-ink-soft">Los catálogos de libros se instalan aparte y no se incluyen en el respaldo clínico.</p></details>
         </section>
       ) : null}
 
@@ -223,22 +223,14 @@ export default async function ConfiguracionPage() {
           </Link>
         ) : null}
 
-        {links.map(({ href, icon: Icon, title, description }) => (
-          <Link
-            key={href}
-            href={href}
-            className="ei-card ei-button group rounded-card border border-line bg-surface p-5 shadow-card transition hover:border-primary"
-          >
-            <div className="flex items-start justify-between">
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-light text-primary">
-                <Icon size={18} />
-              </span>
-              <ChevronRight size={16} className="text-ink-soft transition group-hover:text-primary" />
-            </div>
-            <h2 className="mt-3 text-sm font-semibold text-ink">{title}</h2>
-            <p className="mt-1 text-xs text-ink-soft">{description}</p>
-          </Link>
-        ))}
+        {desktopEdition ? [
+          { title: 'Tu consulta', paths: ['/configuracion/perfil', '/agenda/configuracion', '/configuracion/recordatorios', '/configuracion/asistentes'] },
+          { title: 'Documentación clínica', paths: ['/configuracion/plantillas', '/configuracion/consentimiento'] },
+          { title: 'Tu aplicación', paths: ['/configuracion/apariencia', '/configuracion/sincronizacion', '/configuracion/integraciones', '/configuracion/seguridad'] },
+        ].map(group => {
+          const groupLinks = links.filter(link => group.paths.includes(link.href));
+          return groupLinks.length ? <section key={group.title} className="sm:col-span-2 lg:col-span-3"><h2 className="mb-3 mt-2 font-display text-lg font-bold">{group.title}</h2><div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{groupLinks.map(link => <SettingsCard key={link.href} link={link} nested />)}</div></section> : null;
+        }) : links.map(link => <SettingsCard key={link.href} link={link} />)}
 
         {/* Pacientes: importar / exportar (solo roles con consulta propia) */}
         {assistantView || professorView ? null : (
@@ -276,4 +268,9 @@ export default async function ConfiguracionPage() {
       </div>
     </div>
   );
+}
+
+function SettingsCard({ link: { href, icon: Icon, title, description }, nested = false }: { link: SettingsLink; nested?: boolean }) {
+  const Heading = nested ? 'h3' : 'h2';
+  return <Link href={href} className="ei-card ei-button group rounded-card border border-line bg-surface p-5 shadow-card transition hover:border-primary"><div className="flex items-start justify-between"><span className="ei-icon-tile"><Icon size={18} /></span><ChevronRight size={16} className="text-ink-soft transition group-hover:text-primary" /></div><Heading className="mt-3 text-sm font-semibold text-ink">{title}</Heading><p className="mt-1 text-xs text-ink-soft">{description}</p></Link>;
 }

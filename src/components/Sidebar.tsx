@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   LayoutDashboard,
   CalendarDays,
@@ -22,12 +22,15 @@ import {
   X,
   LogOut,
   Palette,
+  Cloud,
+  Plug,
   type LucideIcon,
 } from 'lucide-react';
 import { NotificationsBell } from '@/components/NotificationsBell';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { LogoMark } from '@/components/Logo';
 import { logoutAction } from '@/app/login/actions';
+import { QuickNavigation } from '@/components/QuickNavigation';
 
 // Tipos puros: el client component no importa valores desde módulos con
 // dependencias de Node (identity), solo replica la forma que le pasa el layout.
@@ -59,6 +62,14 @@ const BASE_ITEMS: NavItem[] = [
 
 const SUPERVISION_ITEM: NavItem = { href: '/supervision', label: 'Supervisión', icon: Eye };
 const HELP_ITEM: NavItem = { href: '/ayuda', label: 'Ayuda', icon: GraduationCap };
+
+function navigationGroup(href: string): string {
+  if (['/inicio', '/agenda', '/pacientes', '/pagos', '/recepcion'].includes(href)) return 'Consulta';
+  if (['/mensajes', '/marketing'].includes(href)) return 'Comunicación';
+  if (['/asistente', '/biblioteca'].includes(href)) return 'Recursos';
+  if (href.startsWith('/organizacion') || ['/supervision', '/admin'].includes(href)) return 'Equipo';
+  return 'Tu aplicación';
+}
 
 function itemsFor(role: SidebarRole, paymentsDisabled: boolean, isSupervisor: boolean): NavItem[] {
   // Recepción multi-consultorio (§5): agenda de VARIOS profesionales (eligiendo destino),
@@ -136,6 +147,13 @@ export function Sidebar({
 }) {
   const pathname = usePathname();
   const items = itemsFor(role, paymentsDisabled, isSupervisor);
+  if (desktopEdition) {
+    const settingsIndex = items.findIndex(item => item.href === '/configuracion');
+    items.splice(settingsIndex + 1, 0, { href: '/configuracion/sincronizacion', label: 'Sincronización', icon: Cloud });
+    if (!['assistant', 'reception', 'professor'].includes(role)) items.splice(settingsIndex + 2, 0, { href: '/configuracion/integraciones', label: 'Servicios opcionales', icon: Plug });
+  }
+  const activeHref = items.filter(item => pathname === item.href || pathname.startsWith(`${item.href}/`)).sort((a, b) => b.href.length - a.href.length)[0]?.href;
+  const groups = desktopEdition ? [...new Set(items.map(item => navigationGroup(item.href)))].map(label => ({ label, items: items.filter(item => navigationGroup(item.href) === label) })) : [{ label: 'Tu espacio de trabajo', items }];
   const home =
     role === 'professor'
       ? '/supervision'
@@ -146,20 +164,49 @@ export function Sidebar({
           : '/inicio';
   // Drawer móvil (v3 §8): cerrado por defecto; se cierra al navegar.
   const [open, setOpen] = useState(false);
+  const [mobile, setMobile] = useState(false);
+  const menuButton = useRef<HTMLButtonElement>(null);
+  const menu = useRef<HTMLElement>(null);
 
   useEffect(() => {
     setOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    const media = window.matchMedia('(max-width: 767px)');
+    const update = () => { setMobile(media.matches); if (!media.matches) setOpen(false); };
+    update(); media.addEventListener('change', update);
+    return () => media.removeEventListener('change', update);
+  }, []);
+  useEffect(() => {
+    if (!open || !mobile) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    menu.current?.querySelector<HTMLElement>('button[aria-label="Cerrar menú"]')?.focus();
+    const listener = (event: KeyboardEvent) => {
+      if (document.querySelector('dialog[open]')) return;
+      if (event.key === 'Escape') { setOpen(false); menuButton.current?.focus(); }
+      if (event.key !== 'Tab') return;
+      const controls = Array.from(menu.current?.querySelectorAll<HTMLElement>('a[href],button:not([disabled]),input:not([disabled])') ?? []).filter(element => element.getClientRects().length > 0);
+      const first = controls[0], last = controls.at(-1);
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+    };
+    document.addEventListener('keydown', listener);
+    return () => { document.body.style.overflow = previousOverflow; document.removeEventListener('keydown', listener); };
+  }, [open, mobile]);
 
   return (
     <>
       {/* Barra superior móvil con hamburguesa (<md) */}
       <header className="fixed inset-x-0 top-0 z-30 flex h-14 items-center gap-3 border-b border-line bg-surface px-4 md:hidden">
         <button
+          ref={menuButton}
           type="button"
           onClick={() => setOpen(true)}
           aria-label="Abrir menú"
           aria-expanded={open}
+          aria-controls="workspace-menu"
           className="rounded-lg p-2 text-ink-soft transition-colors hover:bg-bg hover:text-ink"
         >
           <Menu size={20} />
@@ -184,6 +231,10 @@ export function Sidebar({
       ) : null}
 
       <aside
+        ref={menu}
+        id="workspace-menu"
+        aria-label="Menú principal"
+        inert={mobile && !open}
         className={`ei-sidebar fixed inset-y-0 left-0 z-50 flex w-60 flex-col border-r border-line bg-surface transition-transform duration-200 md:z-20 md:translate-x-0 ${
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
@@ -234,10 +285,12 @@ export function Sidebar({
           </div>
         ) : null}
       </div>
-      <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
-        <p className="mb-3 px-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-soft">Tu espacio de trabajo</p>
-        {items.map(({ href, label, icon: Icon }) => {
-          const active = pathname === href || pathname.startsWith(`${href}/`);
+      {desktopEdition ? <div className="px-3 pt-3"><QuickNavigation destinations={items.map(item => ({ href: item.href, label: item.label, group: navigationGroup(item.href) }))} /></div> : null}
+      <nav aria-label="Secciones" className="min-h-0 flex-1 overflow-y-auto px-3 py-3">
+        {groups.map(group => <div key={group.label} data-nav-group={group.label} className="ei-nav-group mb-3 space-y-0.5">
+        <p className="px-3 pb-1.5 pt-1 text-[10px] font-semibold uppercase tracking-[0.15em] text-ink-soft">{group.label}</p>
+        {group.items.map(({ href, label, icon: Icon }) => {
+          const active = activeHref === href;
           return (
             <Link
               key={href}
@@ -249,11 +302,11 @@ export function Sidebar({
                   : 'text-ink-soft hover:bg-bg hover:text-ink'
               }`}
             >
-              <Icon size={18} strokeWidth={2} />
+              <Icon className="ei-nav-icon shrink-0" size={18} strokeWidth={2} aria-hidden="true" />
               {label}
             </Link>
           );
-        })}
+        })}</div>)}
       </nav>
       <div className="px-3 pb-1">
         <Link href="/configuracion/apariencia" className="ei-option flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium text-ink-soft hover:bg-bg hover:text-ink"><Palette size={16} /> Apariencia</Link>

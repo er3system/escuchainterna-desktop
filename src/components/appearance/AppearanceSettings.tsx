@@ -24,12 +24,12 @@ export function AppearanceSettings({ compact = false }: { compact?: boolean }) {
       </fieldset>
       <fieldset className="mt-6">
         <legend className="mb-3 text-sm font-semibold">Paleta de color</legend>
-        <div className={`grid gap-3 ${compact ? 'grid-cols-2' : 'sm:grid-cols-2 lg:grid-cols-4'}`}>
+        <div className={`grid gap-3 ${compact ? 'grid-cols-2' : 'sm:grid-cols-2 lg:grid-cols-3'}`}>
           {PALETTES.map(palette => (
             <button type="button" key={palette.id} aria-pressed={preferences.palette === palette.id} onClick={() => update({ palette: palette.id })} className={`ei-option rounded-xl border p-3 text-left ${preferences.palette === palette.id ? 'border-accent-strong bg-primary-light/50' : 'border-line'}`}>
-              <span className="mb-3 flex h-14 items-center justify-between rounded-lg px-3" style={{ background: `linear-gradient(125deg, ${palette.color}, ${palette.color}80)` }}>
-                <span className="h-6 w-10 rounded-md border border-white/40 bg-white/20" />
-                {preferences.palette === palette.id ? <Check className="text-white" size={18} /> : null}
+              <span className="mb-3 flex h-16 items-center justify-between overflow-hidden rounded-lg px-3" style={{ background: palette.paper }}>
+                <span className="flex items-end gap-1.5" aria-hidden="true"><span className="h-10 w-5 rounded-md" style={{ background: palette.color }} /><span className="h-7 w-6 rounded-md" style={{ background: palette.companion }} /><span className="h-5 w-8 rounded-md border border-black/10 bg-white" /></span>
+                {preferences.palette === palette.id ? <span className="rounded-full p-1" style={{ background: palette.color }}><Check className="text-white" size={16} /></span> : null}
               </span>
               <span className="block text-sm font-semibold">{palette.name}</span>
               {!compact ? <span className="mt-1 block text-xs text-ink-soft">{palette.description}</span> : null}
