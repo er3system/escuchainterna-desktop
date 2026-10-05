@@ -19,4 +19,4 @@
 
 ## Verificación
 
-Compilación, tipos y pruebas; contraste AA en las seis paletas y ambos modos; navegación con teclado; filtros y paginación del catálogo; lectura sin red; denegación de archivos fuera de las carpetas autorizadas. Verificar también el instalador con datos ficticios antes de actualizar la consulta existente.
+Compilación, tipos y pruebas; contraste AA en las seis paletas y ambos modos; navegación con teclado; filtros y paginación del catálogo; lectura sin red; denegación de archivos fuera de las carpetas autorizadas. El lector admite incrustar el endpoint de archivos solo desde el mismo origen. La ventana nativa permite el visor PDF integrado y sus recursos internos; conserva el bloqueo de sitios externos. `npm run desktop:pdf-smoke` comprueba que se cargue una página PDF ficticia en Electron. Verificar también el instalador con datos ficticios antes de actualizar la consulta existente.

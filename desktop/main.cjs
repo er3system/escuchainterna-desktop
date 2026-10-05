@@ -4,7 +4,7 @@ const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const { spawnSync } = require('node:child_process');
 const { startServer, stopServer, validateDatabase, databaseFingerprint } = require('./runtime.cjs');
-const { isLocalUrl, externalWebsite, isSynchronizationSender } = require('./security.cjs');
+const { isLocalUrl, isAllowedRendererRequest, externalWebsite, isSynchronizationSender } = require('./security.cjs');
 const { loadSecrets, encodeBackup, decodeBackup, restoreBackup, rollbackRestoration, writeAtomicFile } = require('./storage.cjs');
 const { FolderSynchronization, workspaceFingerprint } = require('./synchronization.cjs');
 const { driveFolders } = require('./drive.cjs');
@@ -300,7 +300,7 @@ if (lock) app.whenReady().then(async () => {
   const session = window.webContents.session;
   session.setPermissionRequestHandler((_contents, _permission, callback) => callback(false));
   session.setPermissionCheckHandler(() => false);
-  session.webRequest.onBeforeRequest((details, callback) => callback({ cancel: !isLocalUrl(details.url, server.origin) && details.url !== 'about:blank' }));
+  session.webRequest.onBeforeRequest((details, callback) => callback({ cancel: !isAllowedRendererRequest(details.url, server.origin, details.initiatorOrigin) }));
   window.webContents.on('will-attach-webview', event => event.preventDefault());
   window.webContents.on('will-navigate', (event, url) => { if (!isLocalUrl(url, server.origin)) { event.preventDefault(); void openWebsite(url); } });
   window.webContents.on('will-redirect', (event, url) => { if (!isLocalUrl(url, server.origin)) event.preventDefault(); });

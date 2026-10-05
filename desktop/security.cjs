@@ -7,6 +7,19 @@ function isLocalUrl(value, origin) {
   } catch { return false; }
 }
 
+// Chromium ships this PDF viewer inside Electron. Its resources are internal;
+// allowing this exact extension does not allow websites or other extensions.
+const PDF_VIEWER_ID = 'mhjfbmdgcfjbbpaeojofohoefgiehjai';
+function isAllowedRendererRequest(value, origin, initiatorOrigin) {
+  if (isLocalUrl(value, origin) || value === 'about:blank') return true;
+  try {
+    const url = new URL(value);
+    if (url.port || url.username || url.password) return false;
+    return (url.protocol === 'chrome-extension:' && url.hostname === PDF_VIEWER_ID)
+      || (url.protocol === 'chrome:' && url.hostname === 'resources' && initiatorOrigin === `chrome-extension://${PDF_VIEWER_ID}`);
+  } catch { return false; }
+}
+
 // Only ordinary HTTPS websites can leave the application, after a native prompt.
 // Credentials, local addresses and OS/custom protocols are never forwarded.
 function externalWebsite(value) {
@@ -27,4 +40,4 @@ function isSynchronizationSender(event, webContents, origin) {
   } catch { return false; }
 }
 
-module.exports = { isLocalUrl, externalWebsite, isSynchronizationSender };
+module.exports = { isLocalUrl, isAllowedRendererRequest, externalWebsite, isSynchronizationSender };

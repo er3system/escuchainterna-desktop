@@ -57,6 +57,7 @@ npm ci
 npm run typecheck
 npm test
 npm run desktop:test
+npm run desktop:pdf-smoke
 npm run desktop:build
 npm run desktop:start
 ```

@@ -23,6 +23,7 @@
     "desktop:package": "electron-builder --config desktop/electron-builder.cjs --win nsis --x64",
     "desktop:dir": "electron-builder --config desktop/electron-builder.cjs --win --x64 --dir",
     "desktop:smoke": "node scripts/desktop-smoke.mjs",
+    "desktop:pdf-smoke": "node scripts/desktop-pdf-smoke.mjs",
     "desktop:test": "node --test desktop/tests/*.test.cjs",
     "desktop:start": "electron desktop",
     "desktop:e2e": "node scripts/desktop-e2e.mjs"
