@@ -23,6 +23,9 @@ import { getSessionUserId } from '@/shared/infrastructure/auth/session';
 import { getDatabaseAdapter } from '@/shared/infrastructure/persistence/SqliteAdapter';
 import { redirect } from 'next/navigation';
 import { listIntegrationConnections } from '../configuracion/integraciones/integrationConnections';
+import { isDesktopEdition } from '@/shared/infrastructure/config/desktopEdition';
+import { CalendarOwnerMessage } from '@/contexts/practitioner/application/google-calendar/GoogleCalendarMessages';
+import { createGoogleCalendarConsultation } from '@/contexts/practitioner/infrastructure/google-calendar/createGoogleCalendarConsultation';
 import { computeFreeGaps } from './freeSlots';
 import { AgendaClient } from './AgendaClient';
 import { parseAgendaView } from './agendaTypes';
@@ -161,8 +164,10 @@ export default async function AgendaPage({
   const nameById = new Map(patients.map((patient) => [patient.id, patient.fullName]));
 
   // Sugerir conectar Google Calendar solo si la integración está desconectada.
-  const gcal = (await listIntegrationConnections(ownerUserId)).find((c) => c.provider === 'google_calendar');
-  const gcalConnected = gcal ? gcal.status !== 'desconectado' : false;
+  const desktop = isDesktopEdition();
+  const gcalConnected = desktop
+    ? (await createGoogleCalendarConsultation().summary(new CalendarOwnerMessage(ownerUserId))).connected
+    : (await listIntegrationConnections(ownerUserId)).some(c => c.provider === 'google_calendar' && c.status !== 'desconectado');
 
   // Recordatorios operativos próximos del titular (mismo dueño que la agenda y los
   // pacientes, así el nombre del paciente siempre resuelve): a futuro o sin fecha.
@@ -237,6 +242,8 @@ export default async function AgendaPage({
       gridEndHour={gridEndHour}
       todayIso={todayIso}
       gcalConnected={gcalConnected}
+      calendarHref={desktop ? '/configuracion/google-calendar' : '/configuracion/integraciones'}
+      canConfigureCalendar={canUseAiBriefing}
       nextAppointment={nextAppointment}
       reminders={reminders}
       reminderPatients={reminderPatients}

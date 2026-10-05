@@ -34,12 +34,16 @@ function whenLabel(iso: string | null): string {
  */
 export function AgendaSidebar({
   gcalConnected,
+  calendarHref = '/configuracion/integraciones',
+  canConfigureCalendar = true,
   nextAppointment,
   reminders,
   reminderPatients,
   freeSlotsToday,
 }: {
   gcalConnected: boolean;
+  calendarHref?: string;
+  canConfigureCalendar?: boolean;
   nextAppointment: SidebarNextAppointment | null;
   reminders: SidebarReminder[];
   reminderPatients: ReminderPatientOption[];
@@ -48,20 +52,20 @@ export function AgendaSidebar({
   return (
     <aside className="space-y-4">
       {/* Sugerencia: conectar Google Calendar (solo si está desconectado) */}
-      {!gcalConnected ? (
+      {canConfigureCalendar && (!gcalConnected || calendarHref === '/configuracion/google-calendar') ? (
         <div className="rounded-card border border-primary/30 bg-primary-light/30 p-4 dark:border-accent-2/25 dark:bg-primary/15">
           <div className="flex items-center gap-2">
             <CalendarPlus size={17} className="shrink-0 text-primary dark:text-accent-2" />
-            <h3 className="text-sm font-bold text-ink">Conecta Google Calendar</h3>
+            <h3 className="text-sm font-bold text-ink">{gcalConnected ? 'Google Calendar conectado' : 'Conecta Google Calendar'}</h3>
           </div>
           <p className="mt-1 text-xs text-ink-soft">
-            Sincroniza tus sesiones con tu calendario personal y evita choques de horario.
+            Publica los horarios de tus sesiones y revisa coincidencias con tu calendario personal.
           </p>
           <Link
-            href="/configuracion/integraciones"
+            href={calendarHref}
             className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-primary-dark"
           >
-            <ExternalLink size={13} /> Conectar
+            <ExternalLink size={13} /> {gcalConnected ? 'Abrir sincronización' : 'Conectar'}
           </Link>
         </div>
       ) : null}

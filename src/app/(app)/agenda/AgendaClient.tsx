@@ -60,6 +60,8 @@ export function AgendaClient({
   gridEndHour,
   todayIso,
   gcalConnected,
+  calendarHref,
+  canConfigureCalendar,
   nextAppointment,
   reminders,
   reminderPatients,
@@ -81,6 +83,8 @@ export function AgendaClient({
   todayIso: string;
   /** Columna lateral operativa: estado de Google Calendar, próxima cita y recordatorios. */
   gcalConnected: boolean;
+  calendarHref?: string;
+  canConfigureCalendar?: boolean;
   nextAppointment: SidebarNextAppointment | null;
   reminders: SidebarReminder[];
   reminderPatients: ReminderPatientOption[];
@@ -327,6 +331,8 @@ export function AgendaClient({
 
         <AgendaSidebar
           gcalConnected={gcalConnected}
+          calendarHref={calendarHref}
+          canConfigureCalendar={canConfigureCalendar}
           nextAppointment={nextAppointment}
           reminders={reminders}
           reminderPatients={reminderPatients}

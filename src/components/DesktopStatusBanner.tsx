@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import { ChevronRight, Cloud, HardDrive } from 'lucide-react';
 
 const sections: Record<string, string> = { inicio: 'Inicio', agenda: 'Agenda', pacientes: 'Pacientes', pagos: 'Pagos', mensajes: 'Mensajes', asistente: 'Asistente IA', marketing: 'Marketing', biblioteca: 'Biblioteca', configuracion: 'Configuración', ayuda: 'Ayuda', supervision: 'Supervisión', recepcion: 'Recepción' };
-const pages: Record<string, string> = { apariencia: 'Apariencia', sincronizacion: 'Sincronización', integraciones: 'Servicios opcionales', perfil: 'Perfil', plantillas: 'Plantillas', consentimiento: 'Consentimiento', recordatorios: 'Recordatorios', asistentes: 'Asistentes', seguridad: 'Seguridad', nuevo: 'Nuevo', importar: 'Importar', sesiones: 'Sesiones', historia: 'Historia clínica', archivos: 'Archivos', diagnostico: 'Diagnóstico', 'mapa-familiar': 'Mapa familiar', exportar: 'Exportar', libros: 'Libros de esta PC', configuracion: 'Configuración de agendas' };
+const pages: Record<string, string> = { apariencia: 'Apariencia', sincronizacion: 'Sincronización', integraciones: 'Servicios opcionales', 'google-calendar': 'Google Calendar', perfil: 'Perfil', plantillas: 'Plantillas', consentimiento: 'Consentimiento', recordatorios: 'Recordatorios', asistentes: 'Asistentes', seguridad: 'Seguridad', nuevo: 'Nuevo', importar: 'Importar', sesiones: 'Sesiones', historia: 'Historia clínica', archivos: 'Archivos', diagnostico: 'Diagnóstico', 'mapa-familiar': 'Mapa familiar', exportar: 'Exportar', libros: 'Libros de esta PC', configuracion: 'Configuración de agendas' };
 
 export function DesktopStatusBanner({ homeHref = '/inicio' }: { homeHref?: string }) {
   const parts = usePathname().split('/').filter(Boolean);
