@@ -35,11 +35,17 @@ jobs:
       - run: node scripts/desktop-e2e.mjs
       - run: npm run desktop:package
       - run: npm run desktop:smoke
+      - name: Calcular SHA-256 del instalador
+        shell: pwsh
+        run: |
+          Get-ChildItem -LiteralPath release -Filter '*.exe' | ForEach-Object {
+            "{0}  {1}" -f (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLower(), $_.Name
+          } | Set-Content -LiteralPath release/SHA256SUMS.txt -Encoding ascii
       - uses: actions/upload-artifact@v4
         with:
           name: EscuchaInterna-Windows-x64
           path: |
             release/*.exe
-            release/*.sha256
+            release/SHA256SUMS.txt
           if-no-files-found: error
           retention-days: 14
