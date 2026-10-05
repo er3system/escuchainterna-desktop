@@ -8,4 +8,6 @@ El programa usa un servidor accesible solo desde la propia PC, una ventana con a
 
 Los respaldos del programa contienen datos y material necesario para recuperarlos. Guarda la contraseña y el archivo por separado. Conserva la carpeta de datos al actualizar o desinstalar; eliminar las claves puede impedir leer los expedientes.
 
+La sincronización con Drive cifra el espacio completo antes de escribirlo en la carpeta compartida y protege la contraseña local con DPAPI. La entrega depende de Google Drive para escritorio. Los metadatos del sistema de archivos —IDs, tamaños y número de versiones— siguen visibles; el cifrado no protege una PC desbloqueada. Las versiones no se fusionan automáticamente ni se borran al resolver un conflicto. La guía de recuperación y el contrato están en `docs/desktop-sync.md`.
+
 Los ejecutables publicados inicialmente no tienen firma Authenticode. Compara su SHA-256 con el publicado en la release y descarga únicamente desde este repositorio. La firma y las actualizaciones verificadas se incorporarán cuando exista una identidad de publicación configurada.

@@ -3,6 +3,8 @@ import { cookies } from 'next/headers';
 import { Bricolage_Grotesque, Inter } from 'next/font/google';
 import { PwaRegister } from '@/components/PwaRegister';
 import { isDesktopEdition } from '@/shared/infrastructure/config/desktopEdition';
+import { AppearanceProvider } from '@/components/appearance/AppearanceProvider';
+import { appearanceBootstrap, parseAppearance } from '@/components/appearance/appearancePreferences';
 import './globals.css';
 
 // Tipografía de marca (Reverberación): display con carácter para titulares + Inter
@@ -46,14 +48,15 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  // Tema oscuro GLOBAL por cookie, leído en el servidor (sin parpadeo/FOUC). La clase .dark va en
-  // <body> → cubre el sitio público (landing, auth, legal) además de la app. Los layouts internos
-  // ((app)/organizacion/supervision) ya aplican su propio .dark; anidarlo es inocuo (re-fija tokens).
-  const dark = (await cookies()).get('ei-theme')?.value === 'dark';
+  // Preferencias validadas desde cookies. El bootstrap resuelve el modo automático
+  // en <html> antes de pintar y el proveedor sigue los cambios de Windows.
+  const jar = await cookies();
+  const appearance = parseAppearance(jar.get('ei-theme')?.value, jar.get('ei-palette')?.value, jar.get('ei-motion')?.value);
   return (
-    <html lang="es" className={`${display.variable} ${sans.variable}`}>
-      <body className={dark ? 'antialiased dark' : 'antialiased'}>
-        {children}
+    <html lang="es" suppressHydrationWarning className={`${display.variable} ${sans.variable}${appearance.mode === 'dark' ? ' dark' : ''}`} data-palette={appearance.palette} data-motion={appearance.motion}>
+      <head><script dangerouslySetInnerHTML={{ __html: appearanceBootstrap(appearance) }} /></head>
+      <body className="antialiased">
+        <AppearanceProvider initial={appearance}>{children}</AppearanceProvider>
         {isDesktopEdition() ? null : <PwaRegister />}
       </body>
     </html>

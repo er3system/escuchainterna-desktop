@@ -19,4 +19,12 @@ function externalWebsite(value) {
   } catch { return null; }
 }
 
-module.exports = { isLocalUrl, externalWebsite };
+function isSynchronizationSender(event, webContents, origin) {
+  if (event.sender !== webContents || event.senderFrame !== webContents.mainFrame) return false;
+  try {
+    const url = new URL(event.senderFrame.url);
+    return isLocalUrl(url.href, origin) && ['/sincronizacion', '/configuracion/sincronizacion'].includes(url.pathname);
+  } catch { return false; }
+}
+
+module.exports = { isLocalUrl, externalWebsite, isSynchronizationSender };

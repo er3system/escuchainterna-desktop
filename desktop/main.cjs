@@ -3,9 +3,10 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const { spawnSync } = require('node:child_process');
-const { startServer, stopServer, validateDatabase } = require('./runtime.cjs');
-const { isLocalUrl, externalWebsite } = require('./security.cjs');
+const { startServer, stopServer, validateDatabase, databaseFingerprint } = require('./runtime.cjs');
+const { isLocalUrl, externalWebsite, isSynchronizationSender } = require('./security.cjs');
 const { loadSecrets, encodeBackup, decodeBackup, restoreBackup, rollbackRestoration, writeAtomicFile } = require('./storage.cjs');
+const { FolderSynchronization, workspaceFingerprint } = require('./synchronization.cjs');
 
 const smoke = process.argv.includes('--desktop-smoke');
 const smokeArgument = process.argv.find(value => value.startsWith('--desktop-smoke-dir='));
@@ -16,7 +17,7 @@ if (smoke) {
   app.setPath('userData', directory);
 }
 app.enableSandbox();
-let window, server, workspace, resources, secrets;
+let window, server, workspace, resources, secrets, synchronization;
 let quitting = false, busy = false;
 const lock = app.requestSingleInstanceLock();
 if (!lock) app.quit();
@@ -24,6 +25,7 @@ app.on('second-instance', () => { if (window) { if (window.isMinimized()) window
 app.on('window-all-closed', () => app.quit());
 app.on('before-quit', event => {
   if (quitting) return;
+  if (busy) { event.preventDefault(); return; }
   event.preventDefault(); quitting = true;
   stopServer(server?.child).finally(() => app.quit());
 });
@@ -35,12 +37,12 @@ async function openWebsite(value) {
   if (answer.response === 1) await shell.openExternal(url);
 }
 
-function passwordDialog(restoring) {
+function passwordDialog(restoring, synchronizing = false) {
   return new Promise(resolve => {
     const prompt = new BrowserWindow({ parent: window, modal: true, show: false, width: 530, height: 420, resizable: false, minimizable: false, maximizable: false, title: restoring ? 'Restaurar respaldo' : 'Crear respaldo', autoHideMenuBar: true,
       webPreferences: { preload: path.join(__dirname, 'password-preload.cjs'), sandbox: true, nodeIntegration: false, contextIsolation: true, partition: 'backup-password', webviewTag: false } });
     prompt.setMenu(null);
-    const expected = pathToFileURL(path.join(__dirname, 'password.html')).href;
+    const expected = pathToFileURL(path.join(__dirname, 'password.html')).href + (synchronizing ? '?purpose=sync' : '');
     const receive = (event, value) => {
       if (event.sender !== prompt.webContents || event.senderFrame !== prompt.webContents.mainFrame || event.senderFrame.url !== expected) return;
       if (value !== null && (typeof value !== 'string' || value.length < 12 || value.length > 1024)) return;
@@ -52,7 +54,7 @@ function passwordDialog(restoring) {
     prompt.webContents.session.setPermissionRequestHandler((_contents, _permission, callback) => callback(false));
     prompt.once('closed', () => { ipcMain.removeListener('desktop:backup-password', receive); resolve(null); });
     prompt.once('ready-to-show', () => prompt.show());
-    prompt.loadFile(path.join(__dirname, 'password.html'));
+    prompt.loadFile(path.join(__dirname, 'password.html'), synchronizing ? { query: { purpose: 'sync' } } : {});
   });
 }
 
@@ -60,6 +62,88 @@ async function restart() {
   secrets = loadSecrets(workspace, safeStorage);
   server = await startServer({ resources, workspace, secrets });
   await window.loadURL(`${server.origin}/`);
+}
+
+function consultationFingerprint() {
+  return workspaceFingerprint(workspace, databaseFingerprint(resources, path.join(workspace, 'escuchainterna.db')));
+}
+
+async function connectSynchronization() {
+  if (busy) throw new Error('Hay otra operación de datos en curso.');
+  busy = true;
+  try {
+    const selected = await dialog.showOpenDialog(window, { title: 'Selecciona una carpeta de Google Drive disponible sin conexión', properties: ['openDirectory', 'createDirectory', 'dontAddToRecent'] });
+    if (selected.canceled || !selected.filePaths[0]) return synchronization.status();
+    const password = await passwordDialog(false, true);
+    if (!password) return synchronization.status();
+    return synchronization.connect(selected.filePaths[0], password);
+  } finally { busy = false; }
+}
+
+async function synchronize(receiving, id) {
+  if (busy) throw new Error('Hay otra operación de datos en curso.');
+  busy = true;
+  let stopped = false, previous;
+  try {
+    const incoming = receiving ? synchronization.incoming(id) : null;
+    const config = synchronization.config();
+    if (!config) throw new Error('Conecta primero una carpeta de sincronización.');
+    const localChanged = config.baseline !== consultationFingerprint();
+    const answer = await dialog.showMessageBox(window, {
+      type: receiving ? 'warning' : 'question', title: 'Sincronización cifrada',
+      message: receiving ? '¿Usar en esta PC la versión seleccionada de Drive?' : '¿Publicar tu consulta completa en la carpeta de Drive?',
+      detail: receiving
+        ? `${localChanged ? 'Este equipo contiene cambios propios. ' : ''}Se reemplazará el espacio completo, incluidas todas las cuentas, expedientes y archivos. La consulta actual se conservará íntegra en una carpeta anterior. Las versiones de Drive se conservan; no se combinan expedientes automáticamente. Guarda cualquier formulario antes de continuar.`
+        : 'Se copiarán todas las cuentas, expedientes, archivos y claves dentro de un archivo cifrado. Guarda primero tus formularios. Espera a que Google Drive termine de subirlo antes de continuar en otra PC.',
+      buttons: ['Cancelar', receiving ? 'Conservar copia y recibir' : 'Publicar versión cifrada'], defaultId: 0, cancelId: 0,
+    });
+    if (answer.response !== 1) return synchronization.status();
+    window.setEnabled(false);
+    window.webContents.stop();
+    await stopServer(server.child); stopped = true;
+    validateDatabase(resources, path.join(workspace, 'escuchainterna.db'));
+    let result;
+    if (receiving) previous = restoreBackup(workspace, incoming.payload, safeStorage, database => validateDatabase(resources, database));
+    else result = synchronization.publish(secrets, consultationFingerprint());
+    const baseline = consultationFingerprint();
+    await restart(); stopped = false;
+    if (receiving) synchronization.acknowledge(incoming, baseline);
+    window.setEnabled(true);
+    await dialog.showMessageBox(window, { type: 'info', title: 'Sincronización cifrada',
+      message: receiving ? 'La consulta recibida está lista.' : result.unchanged ? 'No hay cambios nuevos que publicar.' : 'Versión cifrada guardada en la carpeta.',
+      detail: receiving ? `La consulta anterior se conserva en:\n${previous}\n\nUsa la cuenta de la consulta recibida para iniciar sesión.` : 'Google Drive realiza la subida. Comprueba su estado y espera a que termine; EscuchaInterna no confirma la entrega a la nube.',
+    });
+    return synchronization.status();
+  } catch (error) {
+    if (stopped) {
+      try { await stopServer(server?.child); if (previous) rollbackRestoration(workspace, previous); await restart(); }
+      catch { /* Preserve every workspace for manual recovery. */ }
+    }
+    if (!window.isDestroyed()) window.setEnabled(true);
+    await dialog.showMessageBox(window, { type: 'error', title: 'No se pudo sincronizar', message: error.message || 'Los datos de la consulta se conservan.' });
+    throw error;
+  } finally { busy = false; }
+}
+
+function configureSynchronizationIPC() {
+  const operations = {
+    'desktop:sync-status': () => synchronization.status(),
+    'desktop:sync-connect': () => connectSynchronization(),
+    'desktop:sync-publish': () => synchronize(false),
+    'desktop:sync-receive': id => synchronize(true, id),
+    'desktop:sync-disconnect': async () => {
+      if (busy) throw new Error('Hay otra operación de datos en curso.');
+      busy = true;
+      try {
+        const answer = await dialog.showMessageBox(window, { type: 'question', title: 'Desconectar sincronización', message: '¿Desconectar esta PC de la carpeta?', detail: 'La consulta local y las versiones cifradas en Drive se conservan.', buttons: ['Cancelar', 'Desconectar'], defaultId: 0, cancelId: 0 });
+        return answer.response === 1 ? synchronization.disconnect() : synchronization.status();
+      } finally { busy = false; }
+    },
+  };
+  for (const [channel, operation] of Object.entries(operations)) ipcMain.handle(channel, (event, value) => {
+    if (!isSynchronizationSender(event, window.webContents, server.origin)) throw new Error('Esta operación solo está disponible en la pantalla de sincronización del programa.');
+    return operation(value);
+  });
 }
 
 async function backup(restoring) {
@@ -113,6 +197,9 @@ async function backup(restoring) {
 function configureMenu() {
   Menu.setApplicationMenu(Menu.buildFromTemplate([
     { label: 'Archivo', submenu: [
+      { label: 'Abrir carpeta de datos', click: () => { if (!busy) void shell.openPath(app.getPath('userData')); } },
+      { label: 'Sincronización con Google Drive…', click: () => { if (!busy) void window.loadURL(`${server.origin}/sincronizacion`); } },
+      { type: 'separator' },
       { label: 'Crear respaldo cifrado…', click: () => backup(false) },
       { label: 'Restaurar respaldo…', click: () => backup(true) },
       { type: 'separator' },
@@ -143,8 +230,23 @@ async function smokeCheck() {
   const restored = loadSecrets(workspace, safeStorage);
   if (restored.DATA_ENCRYPTION_KEY !== secrets.DATA_ENCRYPTION_KEY || fs.readFileSync(upload, 'utf8') !== 'respaldo local') throw new Error('El respaldo no recuperó claves y archivos.');
   await restart();
-  const result = { ok: preferences.sandbox && !preferences.nodeIntegration && preferences.contextIsolation && renderer.require === 'undefined' && renderer.process === 'undefined' && health.engine === 'sqlite' && counts.users === 0 && counts.patients === 0,
-    electron: process.versions.electron, electronNode: process.versions.node, health, counts, renderer, security: { sandbox: preferences.sandbox, nodeIntegration: preferences.nodeIntegration, contextIsolation: preferences.contextIsolation }, backupRestored: true };
+  const deniedOutsideSync = await window.webContents.executeJavaScript("window.escuchaDesktop.synchronizationStatus().then(()=>false,()=>true)");
+  const sharedFolder = `${app.getPath('userData')}.drive`; fs.mkdirSync(sharedFolder);
+  synchronization.connect(sharedFolder, 'smoke-sync-password-2026');
+  await stopServer(server.child);
+  validateDatabase(resources, path.join(workspace, 'escuchainterna.db'));
+  const published = synchronization.publish(secrets, consultationFingerprint());
+  const incoming = synchronization.incoming(published.id);
+  fs.writeFileSync(upload, 'cambio local de prueba');
+  restoreBackup(workspace, incoming.payload, safeStorage, database => validateDatabase(resources, database));
+  synchronization.acknowledge(incoming, consultationFingerprint());
+  const syncRestored = fs.readFileSync(upload, 'utf8') === 'respaldo local';
+  const passwordProtected = !fs.readFileSync(path.join(app.getPath('userData'), 'synchronization.bin')).includes(Buffer.from('smoke-sync-password-2026'));
+  await restart();
+  await window.loadURL(`${server.origin}/sincronizacion`);
+  const syncBridge = await window.webContents.executeJavaScript('window.escuchaDesktop.synchronizationStatus()');
+  const result = { ok: preferences.sandbox && !preferences.nodeIntegration && preferences.contextIsolation && renderer.require === 'undefined' && renderer.process === 'undefined' && health.engine === 'sqlite' && counts.users === 0 && counts.patients === 0 && deniedOutsideSync && syncRestored && passwordProtected && syncBridge.connected && !syncBridge.pending,
+    electron: process.versions.electron, electronNode: process.versions.node, health, counts, renderer, security: { sandbox: preferences.sandbox, nodeIntegration: preferences.nodeIntegration, contextIsolation: preferences.contextIsolation }, backupRestored: true, synchronization: { encryptedRoundTrip: syncRestored, dpapiProtectedPassword: passwordProtected, nativeBridge: syncBridge.connected, rejectedOtherScreen: deniedOutsideSync } };
   fs.writeFileSync(path.join(app.getPath('userData'), 'desktop-smoke.json'), JSON.stringify(result, null, 2));
   if (!result.ok) throw new Error('La verificación empaquetada no pasó.');
   app.quit();
@@ -154,9 +256,11 @@ if (lock) app.whenReady().then(async () => {
   resources = app.isPackaged ? process.resourcesPath : path.join(__dirname, '..', '.desktop-build', 'resources');
   workspace = path.join(app.getPath('userData'), 'workspace');
   secrets = loadSecrets(workspace, safeStorage);
+  synchronization = new FolderSynchronization({ configFile: path.join(app.getPath('userData'), 'synchronization.bin'), workspace, safeStorage });
   server = await startServer({ resources, workspace, secrets });
   window = new BrowserWindow({ width: 1440, height: 940, minWidth: 1000, minHeight: 700, title: 'EscuchaInterna', backgroundColor: '#f8faf9', show: false,
-    webPreferences: { sandbox: true, nodeIntegration: false, contextIsolation: true, webviewTag: false, webSecurity: true, allowRunningInsecureContent: false, backgroundThrottling: !smoke } });
+    webPreferences: { preload: path.join(__dirname, 'preload.cjs'), sandbox: true, nodeIntegration: false, contextIsolation: true, webviewTag: false, webSecurity: true, allowRunningInsecureContent: false, backgroundThrottling: !smoke } });
+  window.on('close', event => { if (busy) event.preventDefault(); });
   const session = window.webContents.session;
   session.setPermissionRequestHandler((_contents, _permission, callback) => callback(false));
   session.setPermissionCheckHandler(() => false);
@@ -170,6 +274,7 @@ if (lock) app.whenReady().then(async () => {
     return { action: 'deny' };
   });
   configureMenu();
+  configureSynchronizationIPC();
   window.once('ready-to-show', () => { if (!smoke) window.show(); });
   await window.loadURL(`${server.origin}/`);
   if (smoke) await smokeCheck();

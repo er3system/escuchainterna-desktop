@@ -10,6 +10,16 @@ function validateDatabase(resources, databasePath) {
   if (result.status !== 0) throw new Error('La base de datos del respaldo está dañada o no pertenece a EscuchaInterna. La consulta actual se conserva.');
 }
 
+function databaseFingerprint(resources, databasePath) {
+  // Logical content ignores WAL layout, VACUUM and checkpoint artifacts. The
+  // read transaction produces one consistent view without exposing rows to logs.
+  const script = `const {DatabaseSync}=require('node:sqlite');const {createHash}=require('node:crypto');const db=new DatabaseSync(process.argv[1],{readOnly:true});const hash=createHash('sha256');const stringify=v=>JSON.stringify(v,(_,x)=>typeof x==='bigint'?x.toString():x);db.exec('BEGIN');for(const table of db.prepare("SELECT name,sql FROM sqlite_master WHERE type='table' ORDER BY name").all()){hash.update(stringify(table));const name='"'+table.name.replaceAll('"','""')+'"';const statement=db.prepare('SELECT * FROM '+name);statement.setReadBigInts(true);for(const row of statement.all().map(stringify).sort())hash.update(row).update('\\0');}db.exec('COMMIT');db.close();console.log(hash.digest('hex'));`;
+  const result = spawnSync(path.join(resources, 'node', 'node.exe'), ['-e', script, databasePath], { windowsHide: true, encoding: 'utf8', timeout: 30_000 });
+  const value = result.stdout?.trim();
+  if (result.status !== 0 || !/^[a-f0-9]{64}$/.test(value)) throw new Error('No se pudo comprobar el estado local de la consulta.');
+  return value;
+}
+
 function runtimeEnvironment({ parent = process.env, resources, workspace, port, secrets }) {
   const env = {};
   for (const key of ['PATH', 'SYSTEMROOT', 'SystemRoot', 'WINDIR', 'COMSPEC', 'TEMP', 'TMP', 'APPDATA', 'LOCALAPPDATA', 'USERPROFILE', 'HOMEDRIVE', 'HOMEPATH']) {
@@ -79,4 +89,4 @@ function stopServer(child) {
   });
 }
 
-module.exports = { runtimeEnvironment, unusedLoopbackPort, startServer, stopServer, validateDatabase };
+module.exports = { runtimeEnvironment, unusedLoopbackPort, startServer, stopServer, validateDatabase, databaseFingerprint };

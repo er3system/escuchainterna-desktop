@@ -11,6 +11,7 @@ import { getSessionUserId } from '@/shared/infrastructure/auth/session';
 import { getDatabaseAdapter } from '@/shared/infrastructure/persistence/SqliteAdapter';
 import { isDesktopEdition } from '@/shared/infrastructure/config/desktopEdition';
 import { DesktopStatusBanner } from '@/components/DesktopStatusBanner';
+import { WorkspaceTransition } from '@/components/appearance/WorkspaceTransition';
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const desktopEdition = isDesktopEdition();
@@ -39,9 +40,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   )) as { email_verified_at: string | null } | null;
   const emailUnverified = !!verifiedRow && verifiedRow.email_verified_at === null;
 
-  // Tema oscuro: la clase .dark vive en <body> (RootLayout, por cookie) y es la única fuente del
-  // tema → cubre esta área y los toasts/portales (que cuelgan de body). Aquí solo se lee la cookie
-  // para pasar `initialDark` al ThemeToggle del Sidebar (estado inicial del ícono, sin FOUC).
+  // El proveedor global resuelve la iluminación. Se conserva este prop de
+  // compatibilidad para los layouts que comparten el Sidebar.
   const dark = (await cookies()).get('ei-theme')?.value === 'dark';
 
   return (
@@ -66,10 +66,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         initialDark={dark}
         desktopEdition={desktopEdition}
       />
-      <main className="min-h-screen px-4 pb-6 pt-[4.5rem] md:ml-60 md:px-8 md:pt-6">
+      <main className="ei-workspace min-h-screen px-4 pb-6 pt-[4.5rem] md:ml-60 md:px-8 md:pt-6">
         <ImpersonationBanner />
         {desktopEdition ? <DesktopStatusBanner /> : emailUnverified ? <EmailVerificationBanner /> : null}
-        {children}
+        <WorkspaceTransition>{children}</WorkspaceTransition>
       </main>
       {/* El Asistente IA queda fuera del alcance del rol asistente (v3 §4) y del
           profesor (supervisa, no atiende; pisa este layout en biblioteca y

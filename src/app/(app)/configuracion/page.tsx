@@ -16,6 +16,8 @@ import {
   Upload,
   UserRound,
   Users,
+  Palette,
+  Cloud,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { PageHeader } from '@/components/ui';
@@ -139,7 +141,11 @@ export default async function ConfiguracionPage() {
   const role = context?.role ?? 'psychologist';
   const assistantView = role === 'assistant';
   const professorView = role === 'professor';
-  const links = (assistantView ? ASSISTANT_LINKS : professorView ? PROFESSOR_LINKS : SETTINGS_LINKS)
+  const links = [
+    { href: '/configuracion/apariencia', icon: Palette, title: 'Apariencia', description: 'Modo día, noche o automático, paletas de color y movimiento a tu ritmo.' },
+    ...(desktopEdition ? [{ href: '/configuracion/sincronizacion', icon: Cloud, title: 'Sincronización con Drive', description: 'Versiones cifradas para continuar tu consulta en otra PC.' }] : []),
+    ...(assistantView ? ASSISTANT_LINKS : professorView ? PROFESSOR_LINKS : SETTINGS_LINKS),
+  ]
     .filter((link) => !desktopEdition || link.href !== '/configuracion/suscripcion')
     .map((link) => desktopEdition && link.href === '/configuracion/integraciones' ? { ...link, description: 'Estado local y servicios que requieren un proveedor externo.' } : desktopEdition && link.href === '/configuracion/perfil' ? { ...link, description: 'Tu nombre, foto, datos de contacto y tarifas de la consulta local.' } : link);
 
@@ -179,12 +185,12 @@ export default async function ConfiguracionPage() {
         <section className="mb-6 rounded-card border border-primary bg-primary-light p-5">
           <h2 className="flex items-center gap-2 font-semibold text-ink"><HardDrive size={18} /> EscuchaInterna para PC</h2>
           <p className="mt-2 text-sm text-ink">Cuenta local · Sin suscripción · Código abierto con licencia MIT</p>
-          <p className="mt-2 text-sm text-ink-soft">Los expedientes se guardan en este equipo. No hay sincronización automática ni copia en escuchainterna.com. Los enlaces de reserva, sesión y firma de esta instalación solo funcionan en esta PC.</p>
+          <p className="mt-2 text-sm text-ink-soft">Los expedientes se guardan en este equipo. Puedes conectar una carpeta de Drive para publicar y recibir versiones cifradas. Los enlaces de reserva, sesión y firma de esta instalación solo funcionan en esta PC.</p>
           <dl className="mt-4 space-y-2 text-xs text-ink-soft">
             <div><dt className="font-semibold text-ink">Carpeta de la base de datos</dt><dd className="mt-1 break-all font-mono">{localData.databaseDirectory}</dd></div>
             <div><dt className="font-semibold text-ink">Carpeta de archivos adjuntos</dt><dd className="mt-1 break-all font-mono">{localData.uploadsDirectory}</dd></div>
           </dl>
-          <p className="mt-4 text-sm text-ink-soft">Usa el menú de la aplicación para crear una copia de seguridad y abrir la carpeta de datos. Conserva el respaldo completo y las claves de esta instalación juntos; los expedientes cifrados requieren esas claves para restaurarse.</p>
+          <p className="mt-4 text-sm text-ink-soft">Usa el menú Archivo para crear o restaurar un respaldo cifrado completo. Conserva el archivo y su contraseña por separado: el respaldo incluye las claves necesarias para restaurar en otra PC.</p>
           <p className="mt-2 text-xs text-ink-soft">Los servicios de correo, WhatsApp, IA remota, pagos en línea y calendarios necesitan un proveedor configurado y conexión a internet. Sin proveedor, los mensajes quedan como registros locales y los cobros se registran manualmente.</p>
         </section>
       ) : null}
@@ -221,7 +227,7 @@ export default async function ConfiguracionPage() {
           <Link
             key={href}
             href={href}
-            className="group rounded-card border border-line bg-surface p-5 shadow-card transition hover:border-primary"
+            className="ei-card ei-button group rounded-card border border-line bg-surface p-5 shadow-card transition hover:border-primary"
           >
             <div className="flex items-start justify-between">
               <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-light text-primary">

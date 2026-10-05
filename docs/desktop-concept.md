@@ -42,4 +42,6 @@ La primera implementación de respaldos acepta espacios de trabajo de hasta 256 
 
 ## Evolución pendiente
 
-Estas mejoras requieren trabajo adicional y no se presentan como funciones terminadas: actualización automática con firmas verificadas, distribución con firma Authenticode, pruebas en otros Windows y arquitecturas, instalación en macOS/Linux, importación de catálogos con licencia verificada, sincronización opcional entre equipos y portal remoto para pacientes. Una futura sincronización necesita contratos explícitos de conflictos, cifrado y permisos; no se resuelve copiando el archivo SQLite.
+Desde 0.3.0, la apariencia incluye modo día/noche/automático, cuatro paletas y control de movimiento. La continuidad entre PCs se realiza publicando y recibiendo versiones completas cifradas mediante una carpeta de Google Drive para escritorio. Los archivos son inmutables y las divergencias se resuelven eligiendo una versión, conservando alternativas y la consulta local anterior. Ver [contrato y guía de sincronización](desktop-sync.md).
+
+Estas mejoras requieren trabajo adicional y no se presentan como funciones terminadas: actualización automática con firmas verificadas, distribución con firma Authenticode, pruebas en otros Windows y arquitecturas, instalación en macOS/Linux, importación de catálogos con licencia verificada, fusión de cambios simultáneos entre equipos y portal remoto para pacientes.

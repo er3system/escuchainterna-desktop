@@ -260,8 +260,9 @@ export default async function InicioPage() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-ink">{firstName ? `Hola, ${firstName}` : 'Hola'}</h1>
+      <div className="ei-welcome mb-6 rounded-[1.5rem] border border-line p-6">
+        <p className="mb-2 text-xs font-medium uppercase tracking-[0.15em] text-accent-strong">Un nuevo día en tu consulta</p>
+        <h1 className="font-display text-3xl font-bold tracking-tight text-ink">{firstName ? `Hola, ${firstName}` : 'Hola'}</h1>
         <p className="mt-1 text-sm capitalize text-ink-soft">
           {format(now, "EEEE d 'de' MMMM 'de' yyyy", { locale: es })}
         </p>

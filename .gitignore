@@ -39,6 +39,10 @@ scratch-*
 dist-desktop/
 release/
 .open-source-publish/
+*.eisync
+*.eichannel
+*.eibackup
+synchronization.bin
 
 # paquetes de despliegue (se generan con npm run empaquetar:hostinger)
 escuchainterna-hostinger-*.zip

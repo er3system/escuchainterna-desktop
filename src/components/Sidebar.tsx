@@ -21,10 +21,12 @@ import {
   Menu,
   X,
   LogOut,
+  Palette,
   type LucideIcon,
 } from 'lucide-react';
 import { NotificationsBell } from '@/components/NotificationsBell';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { LogoMark } from '@/components/Logo';
 import { logoutAction } from '@/app/login/actions';
 
 // Tipos puros: el client component no importa valores desde módulos con
@@ -182,14 +184,14 @@ export function Sidebar({
       ) : null}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-60 flex-col border-r border-line bg-surface transition-transform duration-200 md:z-20 md:translate-x-0 ${
+        className={`ei-sidebar fixed inset-y-0 left-0 z-50 flex w-60 flex-col border-r border-line bg-surface transition-transform duration-200 md:z-20 md:translate-x-0 ${
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
       <div className="flex flex-col gap-1 px-6 pb-2 pt-4">
         <div className="flex items-center justify-between">
-          <Link href={home} className="text-xl font-bold tracking-tight text-ink">
-            escucha<span className="text-primary dark:text-accent-2">interna</span>
+          <Link href={home} className="logo-echo flex items-center gap-1 font-display text-lg font-bold tracking-tight text-ink">
+            <LogoMark size={29} /> escucha<span className="text-accent-strong">interna</span>
           </Link>
           {/* Campana en la parte superior del sidebar (desktop); en móvil vive en la barra. */}
           {unreadNotifications !== null ? (
@@ -233,15 +235,17 @@ export function Sidebar({
         ) : null}
       </div>
       <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
+        <p className="mb-3 px-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-soft">Tu espacio de trabajo</p>
         {items.map(({ href, label, icon: Icon }) => {
           const active = pathname === href || pathname.startsWith(`${href}/`);
           return (
             <Link
               key={href}
               href={href}
-              className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+              aria-current={active ? 'page' : undefined}
+              className={`ei-nav-link flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
                 active
-                  ? 'bg-primary-light text-primary'
+                  ? 'ei-nav-active bg-primary-light text-primary'
                   : 'text-ink-soft hover:bg-bg hover:text-ink'
               }`}
             >
@@ -252,6 +256,7 @@ export function Sidebar({
         })}
       </nav>
       <div className="px-3 pb-1">
+        <Link href="/configuracion/apariencia" className="ei-option flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium text-ink-soft hover:bg-bg hover:text-ink"><Palette size={16} /> Apariencia</Link>
         <ThemeToggle initialDark={initialDark} />
         <form action={logoutAction}>
           <button

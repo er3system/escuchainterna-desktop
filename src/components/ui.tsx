@@ -12,7 +12,7 @@ import {
 
 export function Card({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
-    <div className={`rounded-card border border-line bg-surface p-5 shadow-card ${className}`}>
+    <div className={`ei-card rounded-card border border-line bg-surface p-5 shadow-card ${className}`}>
       {children}
     </div>
   );
@@ -30,7 +30,7 @@ export function PageHeader({
   return (
     <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
       <div>
-        <h1 className="text-2xl font-bold text-ink">{title}</h1>
+        <h1 className="font-display text-3xl font-bold tracking-tight text-ink">{title}</h1>
         {subtitle ? <p className="mt-1 text-sm text-ink-soft">{subtitle}</p> : null}
       </div>
       {actions ? <div className="flex items-center gap-2">{actions}</div> : null}
@@ -86,7 +86,7 @@ export type ButtonVariant = 'primary' | 'outline' | 'danger' | 'soft' | 'ghost' 
 export type ButtonSize = 'sm' | 'md' | 'lg';
 
 const BUTTON_BASE =
-  'inline-flex items-center justify-center gap-1.5 rounded-lg transition disabled:cursor-not-allowed disabled:opacity-60';
+  'ei-button inline-flex items-center justify-center gap-1.5 rounded-xl transition disabled:cursor-not-allowed disabled:opacity-60';
 
 const BUTTON_VARIANTS: Record<ButtonVariant, string> = {
   primary: 'bg-primary font-semibold text-white hover:bg-primary-dark',

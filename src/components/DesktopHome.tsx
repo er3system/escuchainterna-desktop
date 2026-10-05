@@ -1,50 +1,46 @@
 import Link from 'next/link';
-import { CalendarDays, FileText, HardDrive, LockKeyhole } from 'lucide-react';
+import { ArrowRight, CalendarDays, FileText, HardDrive, LockKeyhole, Palette } from 'lucide-react';
 import { LogoMark } from '@/components/Logo';
+import { ThemeToggle } from '@/components/ThemeToggle';
+import { AppearanceSettings } from '@/components/appearance/AppearanceSettings';
 
 const FEATURES = [
-  { icon: CalendarDays, title: 'Tu consulta organizada', text: 'Agenda, pacientes, sesiones y pagos en un solo lugar.' },
-  { icon: FileText, title: 'Expedientes locales', text: 'Historias clínicas, notas y archivos guardados en esta PC.' },
-  { icon: LockKeyhole, title: 'Una cuenta propia', text: 'Contraseña personal, cifrado de contenido clínico y verificación en dos pasos opcional.' },
+  { icon: CalendarDays, title: 'Todo en su lugar', text: 'Agenda, pacientes y pagos, con espacio para concentrarte.' },
+  { icon: FileText, title: 'Tu memoria clínica', text: 'Historias, notas y documentos siempre a mano.' },
+  { icon: LockKeyhole, title: 'Privacidad desde el inicio', text: 'Cuenta propia y contenido clínico cifrado en esta PC.' },
 ];
 
 export function DesktopHome({ authenticated }: { authenticated: boolean }) {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-bg px-6 py-12 text-ink">
-      <div className="w-full max-w-4xl">
-        <div className="mb-10 flex items-center gap-3">
-          <LogoMark size={38} />
-          <span className="text-xl font-bold">EscuchaInterna <span className="text-primary">para PC</span></span>
+    <main className="ei-home min-h-screen bg-bg px-6 py-8 text-ink sm:px-12">
+      <div className="mx-auto max-w-6xl">
+        <header className="flex items-center justify-between gap-4">
+          <div className="logo-echo flex items-center gap-2"><LogoMark size={36} /><span className="font-display text-xl font-bold tracking-tight">escuchainterna<span className="text-accent-strong">.</span></span><span className="rounded-full border border-line px-2 py-0.5 text-[10px] font-semibold text-ink-soft">PARA PC</span></div>
+          <ThemeToggle variant="icon" />
+        </header>
+        <div className="ei-route-enter grid items-center gap-12 py-14 lg:grid-cols-[1.1fr_0.9fr] lg:py-20">
+          <section>
+            <span className="inline-flex items-center gap-2 rounded-full border border-line bg-surface/70 px-3 py-1.5 text-xs font-medium text-ink-soft"><span className="h-1.5 w-1.5 rounded-full bg-accent" /><HardDrive size={13} /> Tu consulta, bajo tu control</span>
+            <h1 className="mt-7 font-display text-5xl font-bold leading-[1.05] tracking-tight sm:text-6xl">Un espacio para<br /><span className="text-accent-strong">escuchar mejor.</span></h1>
+            <p className="mt-6 max-w-md text-base leading-relaxed text-ink-soft">Menos ruido. Más atención. Organiza tu consulta a tu ritmo, con tus datos en tu equipo y una apariencia que se adapta a ti.</p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link href={authenticated ? '/inicio' : '/registro'} className="ei-button inline-flex items-center gap-3 rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-white hover:bg-primary-dark">{authenticated ? 'Abrir mi consulta' : 'Crear cuenta local'}<ArrowRight size={17} /></Link>
+              {!authenticated ? <Link href="/login" className="ei-button rounded-xl border border-line bg-surface px-5 py-3 text-sm font-medium">Iniciar sesión</Link> : null}
+            </div>
+            <p className="mt-4 text-xs text-ink-soft">Sin suscripción · Funciona sin conexión · Código abierto</p>
+            <Link href="/sincronizacion" className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-accent-strong hover:underline">Continuar desde otra PC <ArrowRight size={14} /></Link>
+          </section>
+          <div className="relative">
+            <div aria-hidden="true" className="ei-orbit pointer-events-none absolute -inset-8 -z-10" />
+            <AppearanceSettings compact />
+          </div>
         </div>
-        <span className="inline-flex items-center gap-2 rounded-full bg-primary-light px-3 py-1 text-xs font-semibold text-primary">
-          <HardDrive size={14} /> Tu espacio de trabajo local
-        </span>
-        <h1 className="mt-5 max-w-3xl text-4xl font-bold leading-tight sm:text-5xl">Tu consulta, en tu equipo.</h1>
-        <p className="mt-5 max-w-2xl text-lg text-ink-soft">
-          Trabaja sin conexión, con tus propios datos y sin suscripción. Esta instalación empieza vacía: crea tu cuenta para preparar tu consulta.
-        </p>
-        <div className="mt-7 flex flex-wrap gap-3">
-          <Link href={authenticated ? '/inicio' : '/registro'} className="rounded-lg bg-primary px-5 py-3 font-semibold text-white hover:bg-primary-dark">
-            {authenticated ? 'Abrir mi consulta' : 'Crear cuenta local'}
-          </Link>
-          {!authenticated ? <Link href="/login" className="rounded-lg border border-line bg-surface px-5 py-3 font-semibold hover:bg-muted">Iniciar sesión</Link> : null}
+        <div className="grid gap-4 sm:grid-cols-3">
+          {FEATURES.map(({ icon: Icon, title, text }) => <section key={title} className="ei-card flex gap-4 rounded-card border border-line bg-surface/80 p-5"><span className="ei-icon-tile"><Icon size={20} /></span><div><h2 className="text-sm font-semibold">{title}</h2><p className="mt-1 text-xs leading-relaxed text-ink-soft">{text}</p></div></section>)}
         </div>
-        <div className="mt-12 grid gap-4 sm:grid-cols-3">
-          {FEATURES.map(({ icon: Icon, title, text }) => (
-            <section key={title} className="rounded-card border border-line bg-surface p-5 shadow-card">
-              <Icon size={22} className="text-primary" aria-hidden="true" />
-              <h2 className="mt-4 font-semibold">{title}</h2>
-              <p className="mt-2 text-sm text-ink-soft">{text}</p>
-            </section>
-          ))}
-        </div>
-        <p className="mt-7 max-w-3xl text-sm text-ink-soft">
-          Los datos no se sincronizan automáticamente con escuchainterna.com. Los servicios externos requieren conexión y configuración; los enlaces de esta instalación solo son accesibles desde esta PC. Mantén copias de seguridad de tus datos.
-        </p>
-        <footer className="mt-8 flex flex-wrap gap-5 border-t border-line pt-5 text-xs text-ink-soft">
-          <span>Código abierto · Licencia MIT</span>
-          <Link href="/legal/terminos" className="hover:underline">Condiciones de uso</Link>
-          <Link href="/legal/privacidad" className="hover:underline">Privacidad local</Link>
+        <footer className="mt-10 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-line py-5 text-xs text-ink-soft">
+          <span>EscuchaInterna · Licencia MIT</span><Link href="/legal/terminos" className="hover:underline">Condiciones de uso</Link><Link href="/legal/privacidad" className="hover:underline">Privacidad local</Link>
+          <span className="ml-auto inline-flex items-center gap-2"><Palette size={13} /> Hecho para tu forma de trabajar</span>
         </footer>
       </div>
     </main>

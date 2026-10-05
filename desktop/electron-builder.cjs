@@ -3,7 +3,7 @@ module.exports = {
   directories: { app: 'desktop', output: 'release' },
   electronVersion: require('../package.json').devDependencies.electron,
   asar: true, npmRebuild: false,
-  files: ['main.cjs', 'runtime.cjs', 'security.cjs', 'storage.cjs', 'password*', 'package.json', '!node_modules/**'],
+  files: ['main.cjs', 'runtime.cjs', 'security.cjs', 'storage.cjs', 'synchronization.cjs', 'preload.cjs', 'password*', 'package.json', '!node_modules/**'],
   extraResources: [
     { from: '.desktop-build/resources', to: '.', filter: ['**/*', '!**/.env*', '!**/*.db', '!**/*.db-wal', '!**/*.db-shm', '!**/uploads/**'] },
     { from: 'LICENSE', to: 'LICENSE' },

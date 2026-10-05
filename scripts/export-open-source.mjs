@@ -18,10 +18,10 @@ const files = [
 ];
 const directories = ['src', 'tests', 'public', 'desktop', 'scripts', 'bin', '.github'];
 const docs = [
-  'desktop-concept.md', 'ui-spec.md', 'historia-clinica-spec.md',
+  'desktop-concept.md', 'desktop-sync.md', 'ui-spec.md', 'historia-clinica-spec.md',
   'expediente-v2-spec.md', 'consultorios-spec.md', 'cuentas-institucionales-spec.md',
 ];
-const deny = /(?:^|\/)(?:node_modules|\.git|\.env(?:\..*)?|backups|uploads)(?:\/|$)|\.(?:db(?:-wal|-shm|-journal)?|pfx|pem|key|enc\.json|ei-backup)$/i;
+const deny = /(?:^|\/)(?:node_modules|\.git|\.env(?:\..*)?|backups|uploads)(?:\/|$)|\.(?:db(?:-wal|-shm|-journal)?|pfx|pem|key|enc\.json|ei-backup|eibackup|eisync|eichannel)$/i;
 let count = 0;
 
 function copy(relative) {

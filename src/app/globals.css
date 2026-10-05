@@ -569,3 +569,59 @@ body {
 .report-prose h1:first-child,
 .report-prose h2:first-child,
 .report-prose p:first-child { margin-top: 0; }
+
+/* Apariencia de la consulta: paletas independientes de los estados clínicos. */
+:root {
+  --color-primary: #286454;
+  --color-primary-dark: #1d4e41;
+  --color-primary-light: #e3eee7;
+  --color-accent: #719e89;
+  --color-accent-2: #c3dfcb;
+  --color-accent-strong: #286454;
+  --color-bg: #f3f5f1;
+  --color-surface: #ffffff;
+  --color-ink: #1f302b;
+  --color-ink-soft: #60716a;
+  --color-line: #dfe7e1;
+  --radius-card: 1.1rem;
+  --shadow-card: 0 4px 20px -9px rgb(30 61 44 / 0.12), 0 1px 2px rgb(30 61 44 / 0.03);
+  --shadow-glow: 0 0 0 1px color-mix(in srgb, var(--color-accent) 20%, transparent), 0 16px 45px -15px color-mix(in srgb, var(--color-accent) 30%, transparent);
+  color-scheme: light;
+}
+:root[data-palette='oceano'] { --color-primary: #315d91; --color-primary-dark: #234774; --color-primary-light: #e3ecf6; --color-accent: #719cc0; --color-accent-2: #bfd6ed; --color-accent-strong: #315d91; --color-bg: #f1f4f8; --color-ink: #243449; --color-ink-soft: #627187; --color-line: #dde5ef; }
+:root[data-palette='lavanda'] { --color-primary: #70528d; --color-primary-dark: #573f72; --color-primary-light: #ece6f4; --color-accent: #a28bbb; --color-accent-2: #d9cbea; --color-accent-strong: #70528d; --color-bg: #f5f3f8; --color-ink: #342b43; --color-ink-soft: #736680; --color-line: #e5dfee; }
+:root[data-palette='terracota'] { --color-primary: #995138; --color-primary-dark: #7c3e28; --color-primary-light: #f5e8df; --color-accent: #c48c6f; --color-accent-2: #ebcfbc; --color-accent-strong: #995138; --color-bg: #f8f3ee; --color-ink: #3f2f28; --color-ink-soft: #7b6a60; --color-line: #e9dfd5; }
+:root.dark {
+  --color-primary: #31725f; --color-primary-dark: #3e846f; --color-primary-light: #223d33;
+  --color-accent: #84bca1; --color-accent-2: #badcc9; --color-accent-strong: #a0d4b9;
+  --color-bg: #101a17; --color-surface: #192621; --color-ink: #e7efe9; --color-ink-soft: #a4b6ab; --color-line: #304139;
+  --color-cream: #192621; --color-canvas: #0c1411;
+  --shadow-card: 0 4px 24px -8px rgb(0 0 0 / 0.25), 0 1px 0 rgb(255 255 255 / 0.025);
+  color-scheme: dark;
+}
+:root.dark[data-palette='oceano'] { --color-primary: #376caa; --color-primary-dark: #427fba; --color-primary-light: #23374c; --color-accent: #82aed5; --color-accent-2: #c0d9f1; --color-accent-strong: #a6c8ed; --color-bg: #111a26; --color-surface: #1b2838; --color-cream: #1b2838; --color-ink: #e6edf6; --color-ink-soft: #a4b4c9; --color-line: #314257; }
+:root.dark[data-palette='lavanda'] { --color-primary: #80619f; --color-primary-dark: #9070af; --color-primary-light: #392e47; --color-accent: #b49bce; --color-accent-2: #dfceef; --color-accent-strong: #d1b8e7; --color-bg: #1a1521; --color-surface: #282132; --color-cream: #282132; --color-ink: #eee8f5; --color-ink-soft: #b9acc7; --color-line: #44394f; }
+:root.dark[data-palette='terracota'] { --color-primary: #a45b40; --color-primary-dark: #b56b4d; --color-primary-light: #432e24; --color-accent: #d89e7f; --color-accent-2: #efcbb5; --color-accent-strong: #e7b597; --color-bg: #201712; --color-surface: #30231c; --color-cream: #30231c; --color-ink: #f2eae4; --color-ink-soft: #c2ada0; --color-line: #4c3b30; }
+.dark .text-primary { color: var(--color-accent-strong); }
+.ei-workspace { background-image: radial-gradient(ellipse at 85% 0%, color-mix(in srgb, var(--color-accent) 8%, transparent), transparent 55%); }
+.ei-sidebar { background-image: linear-gradient(175deg, var(--color-surface) 65%, color-mix(in srgb, var(--color-primary-light) 50%, var(--color-surface))); }
+.ei-nav-link { position: relative; transition: background-color 180ms, color 180ms, transform 180ms; }
+.ei-nav-link:hover { transform: translateX(2px); }
+.ei-nav-active::before { content: ''; position: absolute; left: 0; height: 16px; width: 3px; border-radius: 3px; background: var(--color-accent-strong); }
+.ei-icon-tile { display: inline-flex; flex-shrink: 0; align-items: center; justify-content: center; width: 42px; height: 42px; border-radius: 14px; background: var(--color-primary-light); color: var(--color-accent-strong); }
+.ei-welcome { background: linear-gradient(110deg, color-mix(in srgb, var(--color-primary-light) 75%, var(--color-surface)), var(--color-surface)); }
+.ei-card { transition: border-color 180ms, box-shadow 180ms; }
+.ei-option, .ei-button { transition: background-color 180ms, border-color 180ms, color 180ms, transform 180ms, box-shadow 180ms; }
+.ei-option:hover { background-color: color-mix(in srgb, var(--color-primary-light) 45%, var(--color-surface)); }
+.ei-button:hover { transform: translateY(-1px); box-shadow: var(--shadow-elev-sm); }
+.ei-button:active { transform: translateY(0); }
+.ei-option:focus-visible, .ei-button:focus-visible, a:focus-visible, button:focus-visible { outline: 2px solid var(--color-accent-strong); outline-offset: 3px; }
+@keyframes consultation-enter { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.ei-route-enter { animation: consultation-enter 300ms ease-out both; }
+.ei-home { position: relative; isolation: isolate; overflow: hidden; }
+.ei-home::before { content: ''; position: absolute; inset: -25%; z-index: -1; pointer-events: none; background: radial-gradient(ellipse at 75% 30%, color-mix(in srgb, var(--color-accent) 16%, transparent), transparent 42%), radial-gradient(ellipse at 10% 80%, color-mix(in srgb, var(--color-accent-2) 16%, transparent), transparent 40%); animation: aura-drift 22s ease-in-out infinite; }
+.ei-orbit { border: 1px solid color-mix(in srgb, var(--color-accent) 23%, transparent); border-radius: 50%; }
+:root[data-motion='reduced'] *, :root[data-motion='reduced'] *::before, :root[data-motion='reduced'] *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+@media (prefers-reduced-motion: reduce) { .ei-route-enter, .ei-home::before { animation: none; } .ei-button:hover, .ei-nav-link:hover { transform: none; } }
+:root[data-motion='reduced'] .ei-button:hover, :root[data-motion='reduced'] .ei-nav-link:hover { transform: none; }
+@media print { .ei-sidebar, .ei-home::before { display: none; } .ei-workspace { margin-left: 0; background: white; } }
