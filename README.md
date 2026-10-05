@@ -6,6 +6,8 @@ Programa de escritorio en español para gestionar una consulta psicológica: age
 
 [Descargar para Windows](https://github.com/er3system/escuchainterna-desktop/releases) · [Ver el proyecto](https://escuchainterna.com) · [Apoyar a Laroc en Ko-fi](https://ko-fi.com/laroc)
 
+[Manual de usuario PDF](public/manual-escuchainterna.pdf) · [Guía para agentes de IA y colaboradores](docs/guia-para-ias.md)
+
 ![Inicio de EscuchaInterna para PC en una instalación de prueba](public/showcase/programa.webp)
 
 ## Apoya el proyecto

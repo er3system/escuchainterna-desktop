@@ -2,6 +2,8 @@
 
 Este proyecto usa TypeScript, Next.js, React y Electron. La interfaz y los conceptos de negocio están en español.
 
+Para orientarte con un agente de IA, lee [la guía de arquitectura, verificación y configuración de Google](docs/guia-para-ias.md). El [manual PDF](public/manual-escuchainterna.pdf) describe la experiencia de los usuarios.
+
 1. Abre un issue para describir el problema o la mejora. Usa ejemplos ficticios, nunca expedientes ni datos identificables de pacientes.
 2. Crea una rama a partir de `main` y limita el cambio a una función o corrección verificable.
 3. Respeta los contextos DDD de `src/contexts`, los value objects, los mensajes de aplicación y los repositorios. Las acciones de Next son fronteras delgadas.

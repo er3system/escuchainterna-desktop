@@ -45,6 +45,8 @@ release/
 synchronization.bin
 
 # paquetes de despliegue (se generan con npm run empaquetar:hostinger)
+output/pdf/
+tmp/pdfs/
 escuchainterna-hostinger-*.zip
 dist-para-hostinger.zip
 

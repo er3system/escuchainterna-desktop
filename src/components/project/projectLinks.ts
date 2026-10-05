@@ -7,4 +7,7 @@ export const PROJECT_LINKS = {
   license: 'https://github.com/er3system/escuchainterna-desktop/blob/main/LICENSE',
   issues: 'https://github.com/er3system/escuchainterna-desktop/issues',
   guide: 'https://github.com/er3system/escuchainterna-desktop#instalar',
+  manual: '/manual-escuchainterna.pdf',
+  aiGuide: 'https://github.com/er3system/escuchainterna-desktop/blob/main/docs/guia-para-ias.md',
+  reception: 'https://github.com/er3system/escuchainterna-desktop/blob/main/docs/desktop-consent-reception.md',
 } as const;

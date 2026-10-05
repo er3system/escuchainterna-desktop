@@ -14,7 +14,7 @@ export function generateMetadata(): Metadata {
     description: 'Aplicación local de código abierto para organizar la consulta, con cuentas propias y sin suscripción.',
   };
   const title = 'EscuchaInterna — Gestión de consulta para Windows';
-  const description = 'Agenda, pacientes, historias clínicas y pagos en una aplicación para Windows. Funciona sin conexión. Gratuita y de código abierto, con licencia MIT.';
+  const description = 'Tu consulta, tu espacio. Agenda, expedientes y consentimientos en tu PC. EscuchaInterna es gratuito, funciona sin conexión y comparte su código con licencia MIT.';
   return {
     title, description,
     alternates: { canonical: 'https://escuchainterna.com' },

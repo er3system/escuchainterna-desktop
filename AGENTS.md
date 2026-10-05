@@ -1,5 +1,7 @@
 # EscuchaInterna — acuerdos de trabajo
 
+Lee docs/guia-para-ias.md antes de implementar, verificar, publicar o configurar Google.
+
 - Interfaz y dominio en español.
 - Arquitectura DDD por contextos en src/contexts/<contexto>/{domain,application,infrastructure}.
 - Value objects y mensajes de aplicación convierten los primitivos en la frontera.

@@ -41,7 +41,19 @@ try {
   assert.match(social.headers()['content-type'], /image\/png/);
   checks.push('Portada, enlaces de descarga, Ko-fi, metadata y tarjeta social');
   await page.screenshot({ path: path.join(output, 'desktop.png') });
-  await page.screenshot({ path: path.join(output, 'full-page.png'), fullPage: true });
+  const manual = await context.request.get('http://127.0.0.1:3117/manual-escuchainterna.pdf');
+  assert.equal(manual.status(), 200);
+  assert.match(manual.headers()['content-type'], /application\/pdf/);
+  assert.equal((await manual.body()).subarray(0, 5).toString(), '%PDF-');
+  assert.equal(await page.locator('#guias a[href="/manual-escuchainterna.pdf"]').count(), 1);
+  assert.equal(await page.locator('#guias a[href$="/docs/guia-para-ias.md"]').count(), 1);
+  for (const element of await page.locator('[data-reveal]').all()) {
+    await element.scrollIntoViewIfNeeded();
+    await page.waitForFunction(node => node.getAttribute('data-visible') === 'true', await element.elementHandle());
+  }
+  checks.push('Revelado al desplazar la página, manual PDF y guía para agentes');
+  await page.screenshot({ path: path.join(output, 'full-page.png'), fullPage: true, animations: 'disabled' });
+  await page.locator('#aplicacion').screenshot({ path: path.join(output, 'features.png'), animations: 'disabled' });
   await page.locator('summary').filter({ hasText: 'Ver una captura real del programa' }).click();
   const realImage = page.getByRole('img', { name: /Pantalla de inicio de EscuchaInterna para PC/ });
   assert(await realImage.isVisible());
@@ -81,6 +93,7 @@ try {
   checks.push('Menú móvil y sin desbordamientos a 360, 390, 768 y 1024px');
   await page.emulateMedia({ reducedMotion: 'reduce' });
   assert.equal(await page.locator('[class*="heroGlow"]').evaluate(element => getComputedStyle(element).animationName), 'none');
+  assert(await page.locator('#guias').evaluate(element => [...element.querySelectorAll('[data-reveal]')].every(node => getComputedStyle(node).opacity === '1')));
   await page.keyboard.press('Tab');
   checks.push('Preferencia de movimiento reducido');
   const noJs = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 390, height: 850 } });
@@ -88,6 +101,7 @@ try {
   await staticPage.goto('http://127.0.0.1:3117');
   assert(await staticPage.getByRole('heading', { level: 1 }).isVisible());
   assert(await staticPage.locator('[aria-labelledby="hero-title"]').getByRole('link', { name: 'Descargar para Windows', exact: true }).isVisible());
+  assert(await staticPage.locator('#guias a[href="/manual-escuchainterna.pdf"]').isVisible());
   await staticPage.locator('#preguntas summary').filter({ hasText: '¿Puedo trabajar sin internet?' }).click();
   assert(await staticPage.getByText('Sí. Puedes consultar la agenda', { exact: false }).isVisible());
   checks.push('Contenido, descarga y preguntas disponibles sin JavaScript');
