@@ -63,8 +63,9 @@ async function downloadNode() {
   return { version: NODE_VERSION, archive: archiveName, sha256: checksum };
 }
 
-cleanGenerated(resources);
-const reuseBuild = process.argv.includes('--reuse-build');
+const licensesOnly = process.argv.includes('--licenses-only');
+if (!licensesOnly) cleanGenerated(resources);
+const reuseBuild = licensesOnly || process.argv.includes('--reuse-build');
 if (!reuseBuild) {
 cleanGenerated(source);
 console.log('Preparando snapshot sin .env, cuentas demo, base de datos ni catálogo de terceros…');
@@ -98,6 +99,7 @@ if (next.status !== 0) process.exit(next.status ?? 1);
 const standalone = path.join(source, '.next-desktop', 'standalone');
 if (!fs.existsSync(path.join(standalone, 'server.js'))) throw new Error('Next no produjo un servidor standalone en la raíz del snapshot.');
 const server = path.join(resources, 'server');
+if (!licensesOnly) {
 fs.cpSync(standalone, server, { recursive: true, filter: file => {
   const relative = path.relative(standalone, file).split(path.sep).join('/');
   return !relative.split('/').some(segment => segment.startsWith('.env') || segment === 'uploads') && !/\.db(?:-(?:wal|shm|journal))?$/.test(relative);
@@ -105,6 +107,7 @@ fs.cpSync(standalone, server, { recursive: true, filter: file => {
 fs.cpSync(path.join(source, '.next-desktop', 'static'), path.join(server, '.next-desktop', 'static'), { recursive: true });
 fs.cpSync(path.join(source, 'public'), path.join(server, 'public'), { recursive: true });
 fs.cpSync(path.join(source, 'data'), path.join(server, 'data'), { recursive: true, filter: file => !/\.db(?:-(?:wal|shm|journal))?$/.test(file) });
+}
 // File tracing omits many license texts. Preserve every root and bundled license
 // belonging to packages that actually ship with the standalone server.
 const licenseTexts = new Map();
@@ -133,6 +136,7 @@ function collectLicenses(directory) {
 }
 if (fs.existsSync(dependencyRoot)) collectLicenses(dependencyRoot);
 fs.writeFileSync(path.join(resources, 'DEPENDENCY_LICENSES.txt'), [...licenseTexts.values()].join('\n'));
+if (licensesOnly) { console.log('Licencias del servidor standalone conservadas.'); process.exit(0); }
 const runtime = await downloadNode();
 const metadata = { app: 'EscuchaInterna', version: JSON.parse(fs.readFileSync(path.join(root, 'desktop', 'package.json'))).version, builtAt: new Date().toISOString(), runtime, privateDataIncluded: false, catalogsIncluded: false };
 fs.writeFileSync(path.join(resources, 'build-info.json'), JSON.stringify(metadata, null, 2));
