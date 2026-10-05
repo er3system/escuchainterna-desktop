@@ -57,13 +57,41 @@ class FolderSynchronization {
     writeAtomicFile(this.configFile, this.safeStorage.encryptString(JSON.stringify(config)));
   }
 
-  connect(folder, password) {
-    if (typeof password !== 'string' || password.length < 12 || password.length > 1024) throw new Error('Usa una contraseña de al menos 12 caracteres.');
+  validatedFolder(folder) {
     folder = fs.realpathSync(folder);
     if (!fs.statSync(folder).isDirectory()) throw new Error('Selecciona una carpeta disponible en este equipo.');
     const local = fs.realpathSync(this.workspace);
     const installation = fs.realpathSync(path.dirname(this.configFile));
     if (within(local, folder) || within(folder, local) || within(installation, folder) || within(folder, installation)) throw new Error('Selecciona una carpeta de Drive separada de los datos y la configuración del programa.');
+    return folder;
+  }
+
+  /** Copia exclusivamente la historia cifrada y conserva la contraseña ya protegida por Windows. */
+  copyTo(folder) {
+    const config = this.config();
+    if (!config) throw new Error('Conecta primero una carpeta de sincronización.');
+    folder = this.validatedFolder(folder);
+    if (folder === config.folder) return this.status();
+    if (within(folder, config.folder) || within(config.folder, folder)) throw new Error('Usa una carpeta independiente de la original.');
+    const { revisions } = this.inspect(config);
+    const files = [`${config.channel}.eichannel`, ...revisions.map(meta => `${meta.id}.eisync`)];
+    if (fs.readdirSync(folder).some(name => !files.includes(name))) throw new Error('La carpeta destino contiene otros archivos. Usa una carpeta vacía para esta consulta.');
+    // Valida todos los destinos antes de copiar. Nunca sobrescribe una versión existente.
+    for (const name of files) {
+      const source = path.join(config.folder, name), target = path.join(folder, name);
+      if (!fs.lstatSync(source).isFile() || fs.lstatSync(source).isSymbolicLink()) throw revisionError();
+      if (fs.existsSync(target) && (fs.lstatSync(target).isSymbolicLink() || !fs.lstatSync(target).isFile() || digest(fs.readFileSync(source)) !== digest(fs.readFileSync(target)))) throw revisionError();
+    }
+    for (const name of files) {
+      const target = path.join(folder, name);
+      if (!fs.existsSync(target)) fs.copyFileSync(path.join(config.folder, name), target, fs.constants.COPYFILE_EXCL);
+    }
+    return this.connect(folder, config.password);
+  }
+
+  connect(folder, password) {
+    if (typeof password !== 'string' || password.length < 12 || password.length > 1024) throw new Error('Usa una contraseña de al menos 12 caracteres.');
+    folder = this.validatedFolder(folder);
     const channels = fs.readdirSync(folder).filter(name => name.endsWith('.eichannel'));
     if (channels.length > 1) throw new Error('Hay más de una consulta en esta carpeta. Usa una carpeta independiente para cada consulta.');
     let channel, salt, key;

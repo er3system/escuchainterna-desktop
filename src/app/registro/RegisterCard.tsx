@@ -13,6 +13,7 @@ const INITIAL: RegisterFormState = {};
 export function RegisterCard({ referralCode = '', desktopEdition = false }: { referralCode?: string; desktopEdition?: boolean }) {
   const [state, dispatch, pending] = useActionState(registerAction, INITIAL);
   const [phone, setPhone] = useState({ dialCode: '+57', number: '' });
+  const [synchronization, setSynchronization] = useState('local');
 
   return (
     <div className="w-full max-w-md rounded-card border border-line bg-surface p-8 shadow-card">
@@ -35,6 +36,12 @@ export function RegisterCard({ referralCode = '', desktopEdition = false }: { re
       </div>
 
       <form action={dispatch} className="space-y-3">
+        {desktopEdition ? <fieldset className="mb-5 rounded-xl border border-line bg-bg p-4"><legend className="px-1 text-xs font-semibold">Dónde quieres continuar tu consulta</legend>
+          <label className="flex items-center gap-2 text-sm"><input type="radio" name="synchronization" value="local" checked={synchronization === 'local'} onChange={() => setSynchronization('local')} /> Solo en esta PC</label>
+          <label className="mt-3 flex items-center gap-2 text-sm"><input type="radio" name="synchronization" value="drive" checked={synchronization === 'drive'} onChange={() => setSynchronization('drive')} /> Preparar Google Drive</label>
+          <p className="mt-3 text-xs leading-relaxed text-ink-soft">Tu cuenta sigue siendo local. Drive guarda versiones cifradas para continuar en otra PC; lo conectaremos después de crear la cuenta.</p>
+          <Link href="/sincronizacion?recuperar=1" className="mt-3 block text-xs font-medium text-accent-strong underline">Ya tengo mi consulta en Drive: traerla antes de registrarme</Link>
+        </fieldset> : null}
         {/* Código de referido oculto (v3 §11) */}
         {referralCode ? <input type="hidden" name="ref" value={referralCode} /> : null}
         <div>
@@ -108,7 +115,7 @@ export function RegisterCard({ referralCode = '', desktopEdition = false }: { re
         {state.error ? <p className="text-sm text-danger">{state.error}</p> : null}
 
         <Button type="submit" size="lg" disabled={pending} className="w-full">
-          {pending ? 'Creando tu cuenta…' : 'Crear cuenta y empezar'}
+          {pending ? 'Creando tu cuenta…' : desktopEdition && synchronization === 'drive' ? 'Crear cuenta y preparar Drive' : 'Crear cuenta y empezar'}
         </Button>
       </form>
 

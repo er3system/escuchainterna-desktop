@@ -13,6 +13,7 @@ interface SynchronizationStatus {
   revisions: { id: string; createdAt: string; thisDevice: boolean }[];
 }
 interface DesktopSynchronizationBridge {
+  driveStatus?: () => Promise<{ folders: string[] }>;
   synchronizationStatus: () => Promise<SynchronizationStatus>;
   connectSynchronization: () => Promise<SynchronizationStatus>;
   publishSynchronization: () => Promise<SynchronizationStatus>;
@@ -27,6 +28,7 @@ export function SynchronizationPanel() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [selected, setSelected] = useState('');
+  const [driveFolders, setDriveFolders] = useState<string[] | null>(null);
 
   function apply(next: SynchronizationStatus) {
     setStatus(next);
@@ -38,13 +40,14 @@ export function SynchronizationPanel() {
     const bridge = window.escuchaDesktop;
     setAvailable(Boolean(bridge));
     if (bridge) bridge.synchronizationStatus().then(next => { if (mounted) apply(next); }).catch(() => { if (mounted) setError('No se pudo leer la carpeta. Comprueba que esté disponible sin conexión y vuelve a conectar si es necesario.'); });
+    if (bridge?.driveStatus) bridge.driveStatus().then(next => { if (mounted) setDriveFolders(next.folders); }).catch(() => { if (mounted) setDriveFolders([]); });
     return () => { mounted = false; };
   }, []);
 
   async function run(action: (bridge: DesktopSynchronizationBridge) => Promise<SynchronizationStatus>) {
     if (!window.escuchaDesktop || busy) return;
     setBusy(true); setError('');
-    try { apply(await action(window.escuchaDesktop)); }
+    try { apply(await action(window.escuchaDesktop)); if (window.escuchaDesktop.driveStatus) setDriveFolders((await window.escuchaDesktop.driveStatus()).folders); }
     catch (caught) { setError(caught instanceof Error ? caught.message.replace(/^Error invoking remote method '[^']+': Error: /, '') : 'No se pudo completar la operación. Tus datos se conservan.'); }
     finally { setBusy(false); }
   }
@@ -60,6 +63,7 @@ export function SynchronizationPanel() {
 
       <Card>
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3"><h2 className="flex items-center gap-2 font-semibold"><FolderSync size={18} /> Carpeta de sincronización</h2>{status?.connected ? <span className="rounded-full bg-success-soft px-3 py-1 text-xs font-medium text-success">Configurada en esta PC</span> : null}</div>
+        {available && !status?.connected ? <div className="mb-4 rounded-xl border border-line bg-bg p-4 text-sm"><h3 className="font-semibold">1 · Prepara Drive en Windows</h3><p className="mt-2 text-ink-soft">{driveFolders?.length ? 'Encontramos Mi unidad. Al conectar abriremos esa ubicación si hay una sola disponible.' : 'Instala Drive para escritorio e inicia sesión con tu cuenta de Google. Después pulsa Actualizar estado.'}</p><a href="https://www.google.com/drive/download/" target="_blank" rel="noreferrer" className="mt-2 inline-block text-xs font-medium text-accent-strong underline">Descargar Drive para escritorio ↗</a><h3 className="mt-4 font-semibold">2 · Conecta una carpeta y protégela</h3><p className="mt-2 text-ink-soft">Pulsa Conectar, crea una carpeta llamada EscuchaInterna dentro de Mi unidad y selecciónala. En Drive márcala disponible sin conexión. El programa te pedirá una contraseña de cifrado; usa la misma en la otra PC.</p><h3 className="mt-4 font-semibold">3 · Publica tu primera versión</h3><p className="mt-2 text-ink-soft">Conectar prepara la carpeta. Publicar cambios copia tu consulta cifrada. Espera a que Drive confirme la subida.</p></div> : null}
         {available === false ? <p className="rounded-xl bg-warning-soft p-4 text-sm text-ink">Abre esta pantalla desde el programa de Windows instalado. La conexión a carpetas está disponible en la ventana de EscuchaInterna.</p> : null}
         {available === null ? <p className="text-sm text-ink-soft">Comprobando el programa…</p> : null}
         {status?.folder ? <p className="mb-4 break-all rounded-xl border border-line bg-bg p-3 font-mono text-xs text-ink-soft">{status.folder}</p> : <p className="mb-4 text-sm text-ink-soft">Elige una carpeta vacía para empezar o la misma carpeta que ya usa tu otra PC.</p>}

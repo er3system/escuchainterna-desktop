@@ -6,9 +6,10 @@ export function isDesktopEdition(): boolean {
 }
 
 /** Canales que solo dejan un registro en esta edición, sin servicio de entrega. */
-export function locallyRecordedMessageChannels(): Array<'whatsapp' | 'email'> {
+export async function locallyRecordedMessageChannels(ownerUserId: string): Promise<Array<'whatsapp' | 'email'>> {
   if (!isDesktopEdition()) return [];
-  return process.env.RESEND_API_KEY?.trim() ? ['whatsapp'] : ['whatsapp', 'email'];
+  const { SqlitePersonalProviderRepository } = await import('@/contexts/practitioner/infrastructure/persistence/SqlitePersonalProviderRepository');
+  return await new SqlitePersonalProviderRepository().find(ownerUserId, 'resend') ? ['whatsapp'] : ['whatsapp', 'email'];
 }
 
 /** Rutas de datos locales para la pantalla de configuración, sin credenciales. */

@@ -7,6 +7,7 @@ const { startServer, stopServer, validateDatabase, databaseFingerprint } = requi
 const { isLocalUrl, externalWebsite, isSynchronizationSender } = require('./security.cjs');
 const { loadSecrets, encodeBackup, decodeBackup, restoreBackup, rollbackRestoration, writeAtomicFile } = require('./storage.cjs');
 const { FolderSynchronization, workspaceFingerprint } = require('./synchronization.cjs');
+const { driveFolders } = require('./drive.cjs');
 
 const smoke = process.argv.includes('--desktop-smoke');
 const smokeArgument = process.argv.find(value => value.startsWith('--desktop-smoke-dir='));
@@ -72,11 +73,43 @@ async function connectSynchronization() {
   if (busy) throw new Error('Hay otra operación de datos en curso.');
   busy = true;
   try {
-    const selected = await dialog.showOpenDialog(window, { title: 'Selecciona una carpeta de Google Drive disponible sin conexión', properties: ['openDirectory', 'createDirectory', 'dontAddToRecent'] });
+    const roots = driveFolders();
+    const selected = await dialog.showOpenDialog(window, { title: 'Crea o selecciona EscuchaInterna en Mi unidad · disponible sin conexión', ...(roots.length === 1 ? { defaultPath: roots[0] } : {}), properties: ['openDirectory', 'createDirectory', 'dontAddToRecent'] });
     if (selected.canceled || !selected.filePaths[0]) return synchronization.status();
     const password = await passwordDialog(false, true);
     if (!password) return synchronization.status();
     return synchronization.connect(selected.filePaths[0], password);
+  } finally { busy = false; }
+}
+
+async function useDriveFolder() {
+  if (busy) return;
+  const roots = driveFolders();
+  if (roots.length !== 1) {
+    await dialog.showMessageBox(window, { type: 'info', message: 'No se encontró una única Mi unidad.', detail: 'Inicia sesión en Drive para escritorio. Si usas una carpeta reflejada o varias cuentas, selecciónala desde Sincronización con Google Drive.' });
+    return;
+  }
+  let configured;
+  try { configured = synchronization.config(); }
+  catch {
+    await dialog.showMessageBox(window, { type: 'info', message: 'Vuelve a conectar la carpeta desde Sincronización con Google Drive.', detail: 'Windows no pudo leer la configuración guardada. Tu consulta se conserva.' });
+    return;
+  }
+  if (!configured) {
+    await window.loadURL(`${server.origin}/sincronizacion`);
+    await connectSynchronization();
+    return;
+  }
+  busy = true;
+  try {
+    const destination = path.join(roots[0], 'EscuchaInterna');
+    const answer = await dialog.showMessageBox(window, { type: 'question', title: 'Usar Mi unidad', message: '¿Preparar tu carpeta de sincronización en Google Drive?', detail: `Se copiarán solo las versiones cifradas a:\n${destination}\n\nLa carpeta original se conserva y se reutiliza tu contraseña guardada. Marca la carpeta nueva disponible sin conexión en Drive. Después publica los cambios guardados de la consulta.`, buttons: ['Cancelar', 'Usar Mi unidad'], defaultId: 0, cancelId: 0 });
+    if (answer.response !== 1) return;
+    fs.mkdirSync(destination, { recursive: true });
+    synchronization.copyTo(destination);
+    await window.loadURL(`${server.origin}/sincronizacion`);
+  } catch (error) {
+    await dialog.showMessageBox(window, { type: 'error', title: 'Preparar Drive', message: error.message || 'No se pudo preparar la carpeta. La consulta se conserva.' });
   } finally { busy = false; }
 }
 
@@ -127,6 +160,7 @@ async function synchronize(receiving, id) {
 
 function configureSynchronizationIPC() {
   const operations = {
+    'desktop:drive-status': () => ({ folders: driveFolders() }),
     'desktop:sync-status': () => synchronization.status(),
     'desktop:sync-connect': () => connectSynchronization(),
     'desktop:sync-publish': () => synchronize(false),
@@ -199,6 +233,7 @@ function configureMenu() {
     { label: 'Archivo', submenu: [
       { label: 'Abrir carpeta de datos', click: () => { if (!busy) void shell.openPath(app.getPath('userData')); } },
       { label: 'Sincronización con Google Drive…', click: () => { if (!busy) void window.loadURL(`${server.origin}/sincronizacion`); } },
+      { label: 'Preparar carpeta en Mi unidad…', click: () => { void useDriveFolder(); } },
       { type: 'separator' },
       { label: 'Crear respaldo cifrado…', click: () => backup(false) },
       { label: 'Restaurar respaldo…', click: () => backup(true) },

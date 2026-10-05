@@ -10,6 +10,16 @@ Descarga el instalador `.exe` desde [Releases](https://github.com/er3system/escu
 
 La primera vez crea tu cuenta local. Esta edición no tiene período de prueba ni suscripción. La cuenta y los expedientes pertenecen a esta instalación; no son una cuenta de la web. Usa el menú del programa para crear un respaldo y restaurarlo en otra instalación.
 
+Desde 0.4.0 el registro permite elegir **Solo en esta PC** o **Preparar Google Drive**. Si ya tienes una consulta en Drive, recíbela antes de crear otra cuenta. El asistente detecta Mi unidad en Windows; el inicio de sesión de Google se realiza en Drive para escritorio.
+
+## Servicios opcionales con claves propias
+
+En **Configuración → Integraciones**, conecta **Resend** para enviar correo, **OpenAI** para el chat o **Anthropic** para el chat y las herramientas clínicas. Introduce tu clave API, remitente o modelo y autoriza el tratamiento necesario. Las claves se cifran por cuenta, no vuelven al navegador y están incluidas en los respaldos y versiones cifradas de Drive. La configuración no afirma haber validado saldo o acceso: se comprueban al usar el servicio.
+
+Los proveedores requieren internet y facturan directamente a tu cuenta. Sin clave, la consulta conserva el modo local; los correos sin proveedor quedan como registros sin enviar. Resend requiere un remitente de un dominio verificado. OpenAI usa Responses con `store: false`; su integración cubre el chat, mientras las herramientas de notas e informes siguen locales salvo que conectes Anthropic. Una suscripción de ChatGPT no incluye el uso de su API.
+
+Los correos pendientes se reintentan desde **Mensajes**, acotados al dueño autenticado. Las automatizaciones se revisan al abrir Marketing, no con el programa cerrado. WhatsApp Business, Calendar/Meet y pagos automáticos muestran requisitos y guías; sus adaptadores no están implementados en PC y no se simulan conexiones. Los enlaces de esta PC no son una web pública.
+
 El respaldo inicial admite hasta 256 MiB de datos antes de comprimir. Conserva su contraseña: será necesaria para restaurar. Para imprimir o guardar una vista como PDF, usa el menú del programa y el diálogo de Windows.
 
 ## Apariencia y continuidad entre PCs

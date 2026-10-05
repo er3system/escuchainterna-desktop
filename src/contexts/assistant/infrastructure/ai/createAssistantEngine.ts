@@ -9,6 +9,9 @@ import { AnthropicAssistantEngine } from './AnthropicAssistantEngine';
 import { LocalAssistantEngine } from './LocalAssistantEngine';
 import { MeteredAssistantEngine } from './MeteredAssistantEngine';
 import { BlockedAssistantEngine } from './BlockedAssistantEngine';
+import { OpenAiAssistantEngine } from './OpenAiAssistantEngine';
+import { isDesktopEdition } from '@/shared/infrastructure/config/desktopEdition';
+import { SqlitePersonalProviderRepository } from '@/contexts/practitioner/infrastructure/persistence/SqlitePersonalProviderRepository';
 
 /** Nombre del profesional (perfil) para personalizar el tono (v3 §13). */
 async function readProfessionalName(ownerUserId: string): Promise<string> {
@@ -40,6 +43,14 @@ export async function createAssistantEngine(
     return new BlockedAssistantEngine(access.blockedMessage ?? AI_BUDGET_BLOCKED_MESSAGE);
   }
   const professionalName = await readProfessionalName(ownerUserId);
+  if (isDesktopEdition()) {
+    const config = await aiCloudEnabled() ? await new SqlitePersonalProviderRepository().activeAi(ownerUserId) : null;
+    const models = { premium: config?.model ?? access.model, economico: config?.model ?? access.model, riesgo: config?.model ?? access.model };
+    const engine = !config ? new LocalAssistantEngine(professionalName) : config.provider === 'openai'
+      ? new OpenAiAssistantEngine(config.api_key, config.model, professionalName)
+      : new AnthropicAssistantEngine(config.api_key, models, professionalName);
+    return new MeteredAssistantEngine(engine, ownerUserId, models);
+  }
   const apiKey = process.env.ANTHROPIC_API_KEY;
   // Kill-switch global: si la IA en nube está apagada, se fuerza el motor LOCAL aunque haya API key.
   const useCloud = apiKey !== undefined && apiKey.trim().length > 0 && (await aiCloudEnabled());

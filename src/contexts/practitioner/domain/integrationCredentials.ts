@@ -1,7 +1,7 @@
 /** Valor opaco que indica al cliente que una credencial ya existe sin revelarla. */
 export const REDACTED_INTEGRATION_SECRET = '••••••••';
 
-const INTEGRATION_SECRET_KEYS = new Set(['secret_key', 'access_token', 'client_secret']);
+const INTEGRATION_SECRET_KEYS = new Set(['secret_key', 'access_token', 'client_secret', 'api_key']);
 
 /** Campos cuyo valor nunca debe serializarse en HTML, RSC ni props de cliente. */
 export function isIntegrationSecretKey(key: string): boolean {

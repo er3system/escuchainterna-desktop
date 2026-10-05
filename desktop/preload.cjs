@@ -1,5 +1,6 @@
 const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('escuchaDesktop', Object.freeze({
+  driveStatus: () => ipcRenderer.invoke('desktop:drive-status'),
   synchronizationStatus: () => ipcRenderer.invoke('desktop:sync-status'),
   connectSynchronization: () => ipcRenderer.invoke('desktop:sync-connect'),
   publishSynchronization: () => ipcRenderer.invoke('desktop:sync-publish'),

@@ -1,4 +1,9 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, afterEach, vi } from 'vitest';
+import { UUID } from '@haskou/value-objects';
+import { SqlitePersonalProviderRepository } from '@/contexts/practitioner/infrastructure/persistence/SqlitePersonalProviderRepository';
+import { PersonalProviderCredentials } from '@/contexts/practitioner/domain/value-objects/PersonalProviderCredentials';
+import { sendTransactionalEmail } from '@/shared/infrastructure/notifications/ResendEmailSender';
+import { writeOutboxMessage } from '@/shared/infrastructure/outbox/OutboxWriter';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -71,6 +76,7 @@ afterAll(() => {
   delete (globalThis as { __escuchainternaDbAdapter?: unknown }).__escuchainternaDbAdapter;
   fs.rmSync(tempDir, { recursive: true, force: true });
 });
+afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); });
 
 describe('processOutbox', () => {
   it('drena un correo pendiente y vencido → enviado (modo simulado sin proveedor)', async () => {
@@ -106,5 +112,50 @@ describe('processOutbox', () => {
     expect(outboxBackoffMs(2)).toBe(300_000);
     expect(outboxBackoffMs(3)).toBe(1_500_000);
     expect(outboxBackoffMs(10)).toBe(6 * 60 * 60_000); // tope de 6h
+  });
+});
+
+describe('correo de escritorio con claves propias', () => {
+  const owner = new UUID('33333333-3333-4333-8333-333333333333');
+  const other = '44444444-4444-4444-8444-444444444444';
+  const email = { to: 'dest@example.test', subject: 'Prueba', body: 'Texto ficticio' };
+  function desktop(): void {
+    vi.stubEnv('ESCUCHAINTERNA_DESKTOP', '1');
+    vi.stubEnv('DATA_ENCRYPTION_KEY', 'desktop-mail-test-key-0123456789');
+  }
+  it('sin clave personal no usa credenciales de plataforma ni afirma que envió el correo', async () => {
+    desktop();
+    vi.stubEnv('RESEND_API_KEY', 're_platform_key_123456');
+    const fetcher = vi.fn(); vi.stubGlobal('fetch', fetcher);
+    expect(await sendTransactionalEmail(email, other)).toEqual({ sent: false, reason: 'sin_proveedor' });
+    const id = await writeOutboxMessage({ channel: 'email', recipient: email.to, template: 'correo_masivo', body: email.body, ownerUserId: other });
+    const row = getDb().prepare('SELECT status, created_at, sent_at FROM outbox_messages WHERE id = ?').get(id);
+    expect(row).toMatchObject({ status: 'omitido', sent_at: null });
+    expect(row?.created_at).toEqual(expect.any(String));
+    expect(fetcher).not.toHaveBeenCalled();
+  });
+  it('usa el remitente y clave del dueño y cambia a enviado solo tras éxito real', async () => {
+    desktop();
+    await new SqlitePersonalProviderRepository().save(owner, PersonalProviderCredentials.create('resend', 're_owner_test_key_123456', '', 'consulta@example.test', true));
+    const fetcher = vi.fn().mockResolvedValue(new Response('{}', { status: 200 })); vi.stubGlobal('fetch', fetcher);
+    const id = await writeOutboxMessage({ channel: 'email', recipient: email.to, subject: email.subject, template: 'correo_masivo', body: email.body, ownerUserId: owner.toString() });
+    await vi.waitFor(() => expect(statusOf(id)).toBe('enviado'));
+    expect(fetcher.mock.calls[0][1].headers.Authorization).toBe('Bearer re_owner_test_key_123456');
+    expect(JSON.parse(fetcher.mock.calls[0][1].body).from).toBe('consulta@example.test');
+    expect(await sendTransactionalEmail(email, other)).toEqual({ sent: false, reason: 'sin_proveedor' });
+    expect(fetcher).toHaveBeenCalledTimes(1);
+  });
+  it('los reintentos exigen dueño y dos solicitudes simultáneas no duplican el envío', async () => {
+    desktop();
+    const id = insertMessage({ channel: 'email', status: 'pendiente' });
+    const foreign = insertMessage({ channel: 'email', status: 'pendiente' });
+    getDb().prepare('UPDATE outbox_messages SET owner_user_id = ? WHERE id = ?').run(owner.toString(), id);
+    getDb().prepare('UPDATE outbox_messages SET owner_user_id = ? WHERE id = ?').run(other, foreign);
+    const fetcher = vi.fn().mockImplementation(() => Promise.resolve(new Response('{}', { status: 200 }))); vi.stubGlobal('fetch', fetcher);
+    await expect(processOutbox()).rejects.toThrow('cuenta en sesión');
+    await Promise.all([processOutbox(50, owner.toString()), processOutbox(50, owner.toString())]);
+    expect(statusOf(id)).toBe('enviado');
+    expect(statusOf(foreign)).toBe('pendiente');
+    expect(fetcher).toHaveBeenCalledTimes(1);
   });
 });

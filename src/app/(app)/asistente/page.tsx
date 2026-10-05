@@ -2,6 +2,7 @@ import { PageHeader } from '@/components/ui';
 import { createAssistantUseCases } from '@/contexts/assistant/infrastructure/createAssistantUseCases';
 import { forbidAssistantRole, forbidProfessorRole } from '@/shared/infrastructure/auth/dataOwner';
 import { AssistantChat } from './AssistantChat';
+import { OptionalServiceNotice } from '@/components/desktop/OptionalServiceNotice';
 
 export default async function AsistentePage() {
   await forbidProfessorRole();
@@ -18,6 +19,7 @@ export default async function AsistentePage() {
         title="Asistente IA"
         subtitle="Pregunta por tus pacientes, tu consulta o el uso de la plataforma. El asistente solo accede a TU información."
       />
+      <OptionalServiceNotice ownerUserId={ownerUserId} feature="chat" />
       <AssistantChat
         variant="pagina"
         patients={patients}

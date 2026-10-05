@@ -44,5 +44,6 @@ export async function registerAction(
     }
   }
   await createSession(userId);
+  if (isDesktopEdition() && formData.get('synchronization') === 'drive') redirect('/sincronizacion?registro=1');
   redirect('/onboarding');
 }

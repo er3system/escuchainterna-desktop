@@ -45,7 +45,7 @@ export default async function PatientMensajesPage({ params }: { params: Promise<
           }
         />
       ) : (
-        <MessageList entries={entries} locallyRecordedChannels={locallyRecordedMessageChannels()} />
+        <MessageList entries={entries} locallyRecordedChannels={await locallyRecordedMessageChannels(ownerUserId)} />
       )}
     </div>
   );

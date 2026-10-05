@@ -40,7 +40,7 @@ export default async function NotaSesionPage({
     response: interaction.response,
     createdAt: interaction.createdAt,
   }));
-  const provider = await sessionInsightsProviderName();
+  const provider = await sessionInsightsProviderName(ownerUserId);
 
   // Sesión estructurada: si la nota se creó con plantilla (1ª/seguimiento),
   // se resuelve para renderizar su formulario junto al texto libre. Los bloques

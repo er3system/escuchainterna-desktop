@@ -21,7 +21,7 @@ const options = {
 let server, browser;
 const errors = [];
 
-async function register(context, name, email) {
+async function register(context, name, email, drive = false) {
   const page = await context.newPage();
   page.on('pageerror', error => errors.push(error.message));
   await page.goto(`${server.origin}/registro`, { waitUntil: 'networkidle' });
@@ -29,8 +29,10 @@ async function register(context, name, email) {
   await page.locator('#registro-email').fill(email);
   await page.locator('#registro-password').fill('PruebaLocal2026!');
   await page.locator('input[name="terminos"]').check();
-  await page.getByRole('button', { name: 'Crear cuenta y empezar' }).click();
-  await page.waitForURL('**/onboarding', { timeout: 30000 });
+  if (drive) await page.locator('input[name="synchronization"][value="drive"]').check();
+  await page.getByRole('button', { name: drive ? 'Crear cuenta y preparar Drive' : 'Crear cuenta y empezar' }).click();
+  await page.waitForURL(drive ? '**/sincronizacion?registro=1' : '**/onboarding', { timeout: 30000 });
+  if (drive) await page.getByRole('heading', { name: 'Tu cuenta está lista · prepara Drive' }).waitFor();
   return page;
 }
 
@@ -40,6 +42,25 @@ try {
   catch { browser = await chromium.launch({ headless: true, channel: 'msedge' }); }
   const firstContext = await browser.newContext({ viewport: { width: 1440, height: 940 } });
   const first = await register(firstContext, 'Profesional de prueba', 'primero@desktop.example.test');
+  await first.goto(`${server.origin}/configuracion/integraciones`, { waitUntil: 'networkidle' });
+  await first.getByRole('heading', { name: 'Servicios opcionales', exact: true }).waitFor();
+  assert.equal(await first.getByRole('button', { name: 'Conectar con mi propia clave', exact: true }).count(), 3);
+  const resendSection = first.locator('section').filter({ has: first.getByRole('heading', { name: 'Correo · Resend', exact: true }) });
+  await resendSection.getByRole('button', { name: 'Conectar con mi propia clave', exact: true }).click();
+  const fixtureKey = 're_e2e_fake_key_1234567890';
+  await first.locator('#resend-key').fill(fixtureKey);
+  await first.locator('#resend-sender').fill('consulta@example.test');
+  await resendSection.locator('input[name="authorized"]').check();
+  await resendSection.getByRole('button', { name: 'Guardar y habilitar' }).click();
+  await resendSection.getByText('Configuración guardada.', { exact: false }).waitFor();
+  await first.waitForFunction(() => document.querySelector('#resend-key')?.value === '');
+  assert.ok(!(await first.content()).includes(fixtureKey), 'No se serializa la clave en HTML');
+  const credentialDb = new DatabaseSync(path.join(workspace, 'escuchainterna.db'), { readOnly: true });
+  const credential = credentialDb.prepare("SELECT config_json FROM integration_connections WHERE provider = 'resend'").get();
+  assert.match(credential.config_json, /^enc:cfg:v1:/);
+  assert.ok(!credential.config_json.includes(fixtureKey));
+  credentialDb.close();
+  await first.screenshot({ path: path.join(evidence, 'servicios-opcionales.png'), fullPage: true });
   await first.goto(`${server.origin}/configuracion/apariencia`, { waitUntil: 'networkidle' });
   await first.getByRole('heading', { name: 'Apariencia', exact: true }).waitFor();
   const contrast = (a, b) => {
@@ -102,7 +123,11 @@ try {
   await anonymousPage.goto(`${server.origin}/pacientes/${patient.id}`);
   assert.match(anonymousPage.url(), /\/login/);
   const secondContext = await browser.newContext();
-  const second = await register(secondContext, 'Otro profesional de prueba', 'segundo@desktop.example.test');
+  const second = await register(secondContext, 'Otro profesional de prueba', 'segundo@desktop.example.test', true);
+  await second.screenshot({ path: path.join(evidence, 'registro-drive.png'), fullPage: true });
+  await second.goto(`${server.origin}/configuracion/integraciones`, { waitUntil: 'networkidle' });
+  assert.equal(await second.getByRole('button', { name: 'Conectar con mi propia clave', exact: true }).count(), 3);
+  assert.equal(await second.getByText('Configurada · sin verificar', { exact: true }).count(), 0);
   await second.goto(`${server.origin}/pacientes/${patient.id}`, { waitUntil: 'networkidle' });
   // Next puede haber enviado HTTP 200 antes de completar una respuesta en streaming.
   // La frontera real es la pantalla not-found y la ausencia de cualquier dato ajeno.

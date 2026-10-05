@@ -17,6 +17,7 @@ import {
 import { IntegrationForm, type IntegrationFieldSpec } from './IntegrationForm';
 import { PaymentGatewayForm } from './PaymentGatewayForm';
 import { isDesktopEdition } from '@/shared/infrastructure/config/desktopEdition';
+import { DesktopIntegrations } from './DesktopIntegrations';
 
 interface ProviderMeta {
   provider: IntegrationProvider;
@@ -81,29 +82,11 @@ const STATUS_LABEL: Record<string, { label: string; tone: 'neutral' | 'success' 
 };
 
 export default async function IntegracionesPage() {
-  const connections = await listIntegrationConnections(await requireClinicalConfigAccess());
+  const ownerUserId = await requireClinicalConfigAccess();
   if (isDesktopEdition()) {
-    return (
-      <div>
-        <PageHeader title="Integraciones · Edición PC" subtitle="La consulta funciona sin internet. Los servicios externos se configuran por separado." />
-        <div className="mb-6 rounded-card border border-line bg-primary-light p-5 text-sm text-ink">
-          Las cuentas empresariales de la plataforma web no están incluidas en esta instalación. Los enlaces de reserva, sesión y firma se abren únicamente desde esta PC.
-        </div>
-        <div className="grid gap-4 sm:grid-cols-2">
-          {[
-            { title: 'Pagos', text: 'Registra pagos, tarifas y saldos de tus pacientes manualmente. Esta instalación no procesa cobros en línea.' },
-            { title: 'Correo y WhatsApp', text: 'Los mensajes sin proveedor quedan registrados localmente; no se entregan al destinatario. El envío requiere un proveedor y credenciales propios.' },
-            { title: 'Calendario y videollamadas', text: 'La agenda es local. Esta edición no configura una cuenta real de Google ni genera reuniones remotas mediante una simulación.' },
-            { title: 'Asistente', text: 'El modo local organiza la información registrada. Para análisis con IA remota se necesita un proveedor configurado, internet y autorización para tratar los datos clínicos.' },
-          ].map(({ title, text }) => (
-            <section key={title} className="rounded-card border border-line bg-surface p-5 shadow-card">
-              <Badge tone="neutral">Local</Badge><h2 className="mt-3 font-semibold text-ink">{title}</h2><p className="mt-2 text-sm text-ink-soft">{text}</p>
-            </section>
-          ))}
-        </div>
-      </div>
-    );
+    return <DesktopIntegrations ownerUserId={ownerUserId} />;
   }
+  const connections = await listIntegrationConnections(ownerUserId);
   const byProvider = new Map(connections.map((connection) => [connection.provider, connection]));
 
   return (

@@ -15,6 +15,7 @@ import { resolveEmailSender } from '@/shared/infrastructure/email-themes/resolve
 import type { EmailThemeId } from '@/shared/infrastructure/email-themes/emailThemes';
 import { AutomationsPanel } from './AutomationsPanel';
 import { RecipientsTable } from './RecipientsTable';
+import { OptionalServiceNotice } from '@/components/desktop/OptionalServiceNotice';
 
 export default async function MarketingPage() {
   await forbidProfessorRole();
@@ -68,6 +69,7 @@ export default async function MarketingPage() {
       />
 
       <div className="space-y-6">
+        <OptionalServiceNotice ownerUserId={ownerUserId} feature="email" />
         <AutomationsPanel automations={automations} />
         <RecipientsTable
           allRecipients={segmentation}

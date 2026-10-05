@@ -23,7 +23,7 @@ export class MeteredAssistantEngine implements AssistantEngine {
     private readonly models: ModelCandidates,
   ) {}
 
-  public providerName(): 'local' | 'anthropic' {
+  public providerName(): 'local' | 'anthropic' | 'openai' {
     return this.inner.providerName();
   }
 

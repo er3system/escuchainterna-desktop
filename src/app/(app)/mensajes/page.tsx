@@ -15,6 +15,7 @@ import { MessageFilters } from './MessageFilters';
 import { MessageList } from './MessageList';
 import { TemplatesManager } from './TemplatesManager';
 import { isDesktopEdition, locallyRecordedMessageChannels } from '@/shared/infrastructure/config/desktopEdition';
+import { retryDesktopMail } from './retryDesktopMail';
 
 export default async function MensajesPage({
   searchParams,
@@ -43,6 +44,7 @@ export default async function MensajesPage({
         subtitle={isDesktopEdition() ? 'Registro local de recordatorios, confirmaciones y campañas. Sin proveedor, estos registros no se entregan al destinatario.' : 'El registro de todo lo enviado (recordatorios, confirmaciones y campañas) y las plantillas y tema visual de tus correos. En modo local los mensajes se registran aquí sin enviarse.'}
       />
 
+      {isDesktopEdition() ? <div className="mb-5 flex flex-wrap items-center gap-4 rounded-xl border border-line bg-surface p-4 text-sm"><Link href="/configuracion/integraciones" className="text-accent-strong underline">Conectar mi clave de Resend para enviar correo</Link><form action={retryDesktopMail}><button className="rounded-lg border border-line px-3 py-2">Reintentar correos pendientes</button></form></div> : null}
       <WaBudgetBanner budget={waBudget} />
 
       <div className="mb-6 flex gap-1 border-b border-line">
@@ -177,7 +179,7 @@ async function LogTab({
         />
       ) : (
         <>
-          <MessageList entries={result.entries} locallyRecordedChannels={locallyRecordedMessageChannels()} />
+          <MessageList entries={result.entries} locallyRecordedChannels={await locallyRecordedMessageChannels(ownerUserId)} />
           <div className="mt-4 flex items-center justify-between text-sm text-ink-soft">
             <span>
               {from}-{to} de {result.total}

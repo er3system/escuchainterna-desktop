@@ -26,7 +26,7 @@ export interface AssistantEngine {
    */
   answerStream(question: string, retrievedContext: RetrievedPatientContext | null): AsyncIterable<string>;
 
-  providerName(): 'local' | 'anthropic';
+  providerName(): 'local' | 'anthropic' | 'openai';
 
   /**
    * Uso REAL (tokens facturables equivalentes, ya ajustados por caché) de la

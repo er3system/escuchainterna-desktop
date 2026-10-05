@@ -38,6 +38,32 @@ function verifyDatabase(file) {
   const db = new DatabaseSync(file);
   try { assert.equal(db.prepare('PRAGMA quick_check').get().quick_check, 'ok'); db.exec('PRAGMA wal_checkpoint(TRUNCATE)'); } finally { db.close(); }
 }
+
+test('moving transport to Drive copies only encrypted history and reuses protected password without deleting the original', t => {
+  const { root, folder, computer } = fixture(t), pc = computer('A');
+  pc.sync.connect(folder, password);
+  const first = pc.sync.publish(pc.secrets, fingerprint(pc));
+  const destination = path.join(root, 'Cloud'); fs.mkdirSync(destination);
+  const originalNames = fs.readdirSync(folder).sort();
+  pc.sync.copyTo(destination);
+  assert.equal(pc.sync.status().folder, destination);
+  assert.equal(pc.sync.status().base, first.id);
+  assert.deepEqual(fs.readdirSync(destination).sort(), originalNames);
+  assert.deepEqual(fs.readdirSync(folder).sort(), originalNames);
+  for (const name of originalNames) assert.deepEqual(fs.readFileSync(path.join(folder, name)), fs.readFileSync(path.join(destination, name)));
+  assert.equal(pc.sync.incoming(first.id).payload.files.some(file => file.path === 'escuchainterna.db'), true);
+});
+
+test('transport relocation rejects occupied or nested folders and preserves its active configuration', t => {
+  const { root, folder, computer } = fixture(t), pc = computer('A');
+  pc.sync.connect(folder, password);
+  const destination = path.join(root, 'Occupied'); fs.mkdirSync(destination); fs.writeFileSync(path.join(destination, 'private.txt'), 'keep');
+  assert.throws(() => pc.sync.copyTo(destination), /otros archivos/);
+  const nested = path.join(folder, 'Child'); fs.mkdirSync(nested);
+  assert.throws(() => pc.sync.copyTo(nested), /independiente/);
+  assert.equal(pc.sync.status().folder, folder);
+  assert.equal(fs.readFileSync(path.join(destination, 'private.txt'), 'utf8'), 'keep');
+});
 function receive(computer, id) {
   const incoming = computer.sync.incoming(id);
   const previous = restoreBackup(computer.workspace, incoming.payload, computer.safeStorage, verifyDatabase);

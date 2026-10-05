@@ -1,5 +1,6 @@
 import { getDatabaseAdapter } from '../persistence/SqliteAdapter';
 import { sendTransactionalEmail } from '../notifications/ResendEmailSender';
+import { isDesktopEdition } from '../config/desktopEdition';
 
 /**
  * Worker durable del OUTBOX (re-plataforma 0f). Drena los correos pendientes y
@@ -31,6 +32,7 @@ interface DueRow {
   subject: string;
   body: string;
   attempts: number;
+  owner_user_id?: string;
 }
 
 export interface OutboxDrainResult {
@@ -40,21 +42,29 @@ export interface OutboxDrainResult {
   failed: number;
 }
 
-export async function processOutbox(limit = 50): Promise<OutboxDrainResult> {
+export async function processOutbox(limit = 50, ownerUserId?: string): Promise<OutboxDrainResult> {
   const db = getDatabaseAdapter();
+  if (isDesktopEdition() && !ownerUserId) throw new Error('El reintento local necesita una cuenta en sesión.');
   const nowIso = new Date().toISOString();
   const due = await db.query<DueRow>(
-    `SELECT id, recipient, subject, body, attempts FROM outbox_messages
+    `SELECT id, recipient, subject, body, attempts, owner_user_id FROM outbox_messages
       WHERE channel = 'email' AND status = 'pendiente'
         AND (next_attempt_at IS NULL OR next_attempt_at <= ?)
+        ${ownerUserId ? 'AND owner_user_id = ?' : ''}
       ORDER BY (next_attempt_at IS NULL) DESC, next_attempt_at ASC
       LIMIT ?`,
-    [nowIso, limit],
+    [nowIso, ...(ownerUserId ? [ownerUserId] : []), limit],
   );
 
   const result: OutboxDrainResult = { processed: 0, sent: 0, requeued: 0, failed: 0 };
 
   for (const row of due) {
+    if (isDesktopEdition()) {
+      const claimed = await db.queryRow<{ id: string }>(`UPDATE outbox_messages SET next_attempt_at = ?
+        WHERE id = ? AND status = 'pendiente' AND (next_attempt_at IS NULL OR next_attempt_at <= ?) RETURNING id`,
+        [new Date(Date.now() + 120_000).toISOString(), row.id, nowIso]);
+      if (!claimed) continue;
+    }
     result.processed += 1;
     let reason: string | undefined;
     try {
@@ -62,13 +72,17 @@ export async function processOutbox(limit = 50): Promise<OutboxDrainResult> {
         to: row.recipient,
         subject: row.subject,
         body: row.body,
-      });
+      }, row.owner_user_id);
       reason = sendResult.reason;
     } catch (error) {
       reason = error instanceof Error ? error.message : 'error_desconocido';
     }
 
     // Éxito real o "sin_proveedor" (modo simulado de dev) → enviado.
+    if (reason === 'sin_proveedor' && isDesktopEdition()) {
+      await db.execute("UPDATE outbox_messages SET status = 'omitido', sent_at = NULL, next_attempt_at = NULL WHERE id = ?", [row.id]);
+      continue;
+    }
     if (!reason || reason === 'sin_proveedor') {
       await db.execute(
         `UPDATE outbox_messages SET status = 'enviado', sent_at = ?, next_attempt_at = NULL WHERE id = ?`,

@@ -4,6 +4,8 @@ import { SessionInsights } from '../../domain/SessionInsights';
 import { AnthropicSessionInsights } from './AnthropicSessionInsights';
 import { LocalSessionInsights } from './LocalSessionInsights';
 import { MeteredSessionInsights } from './MeteredSessionInsights';
+import { isDesktopEdition } from '@/shared/infrastructure/config/desktopEdition';
+import { SqlitePersonalProviderRepository } from '@/contexts/practitioner/infrastructure/persistence/SqlitePersonalProviderRepository';
 
 export interface SessionInsightsMetering {
   /** Dueño en sesión: a su nombre se registran los eventos de uso de IA. */
@@ -35,6 +37,11 @@ export async function createSessionInsights(
   metering: SessionInsightsMetering,
 ): Promise<SessionInsights> {
   const professionalName = await readProfessionalName(metering.ownerUserId);
+  if (isDesktopEdition()) {
+    const config = await aiCloudEnabled() ? await new SqlitePersonalProviderRepository().find(metering.ownerUserId, 'anthropic') : null;
+    const inner = config ? new AnthropicSessionInsights(config.api_key, config.model, professionalName) : new LocalSessionInsights(professionalName);
+    return new MeteredSessionInsights(inner, metering.ownerUserId, config?.model ?? metering.model);
+  }
   const apiKey = process.env.ANTHROPIC_API_KEY;
   // Kill-switch global: si la IA en nube está apagada, se fuerza el adaptador LOCAL aunque haya clave.
   const useCloud = apiKey !== undefined && apiKey.trim().length > 0 && (await aiCloudEnabled());
@@ -50,7 +57,8 @@ export async function createSessionInsights(
  * en nube encendido): con el kill-switch apagado se sirve el adaptador local
  * aunque haya clave, y el badge debe decir lo mismo que hace el motor.
  */
-export async function sessionInsightsProviderName(): Promise<'anthropic' | 'local'> {
+export async function sessionInsightsProviderName(ownerUserId?: string): Promise<'anthropic' | 'local'> {
+  if (isDesktopEdition()) return ownerUserId && await aiCloudEnabled() && await new SqlitePersonalProviderRepository().find(ownerUserId, 'anthropic') ? 'anthropic' : 'local';
   const apiKey = process.env.ANTHROPIC_API_KEY;
   return apiKey && apiKey.trim().length > 0 && (await aiCloudEnabled()) ? 'anthropic' : 'local';
 }

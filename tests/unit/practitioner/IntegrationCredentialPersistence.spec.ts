@@ -1,5 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { DatabaseSync } from 'node:sqlite';
+import { UUID } from '@haskou/value-objects';
+import { SqlitePersonalProviderRepository } from '@/contexts/practitioner/infrastructure/persistence/SqlitePersonalProviderRepository';
+import { PersonalProviderCredentials } from '@/contexts/practitioner/domain/value-objects/PersonalProviderCredentials';
 import type {
   DatabaseAdapter,
   SqlParam,
@@ -91,6 +94,39 @@ function storedConfig(provider: string, ownerUserId: string): string {
       .get(provider, ownerUserId) as { config_json: string }
   ).config_json;
 }
+
+describe('proveedores personales de la edición PC', () => {
+  const owner = new UUID('11111111-1111-4111-8111-111111111111');
+  const other = new UUID('22222222-2222-4222-8222-222222222222');
+  it('cifra la clave, no la revela al cliente y nunca usa la cuenta de otro profesional', async () => {
+    const repo = new SqlitePersonalProviderRepository(db);
+    await repo.save(owner, PersonalProviderCredentials.create('resend', 're_secret_personal_123456789', '', 'consulta@example.test', true));
+    expect(storedConfig('resend', owner.toString())).not.toContain('re_secret_personal');
+    expect(await repo.find(other.toString(), 'resend')).toBeNull();
+    const config = await repo.find(owner.toString(), 'resend');
+    expect(config?.sender).toBe('consulta@example.test');
+    expect(redactIntegrationSecrets({ api_key: config!.api_key }).api_key).toBe(REDACTED_INTEGRATION_SECRET);
+    await repo.disconnect(owner, 'resend');
+    expect(await repo.find(owner.toString(), 'resend')).toBeNull();
+    expect(storedConfig('resend', owner.toString())).toBe('{}');
+  });
+  it('cambiar de IA desactiva el proveedor anterior solo para su dueño', async () => {
+    const repo = new SqlitePersonalProviderRepository(db);
+    const claude = PersonalProviderCredentials.create('anthropic', 'sk-ant-personal_123456789', 'claude-test', '', true);
+    await repo.save(owner, claude);
+    await repo.save(other, claude);
+    await repo.save(owner, PersonalProviderCredentials.create('openai', 'sk-openai_personal_123456789', 'openai-test', '', true));
+    expect((await repo.activeAi(owner.toString()))?.provider).toBe('openai');
+    expect(await repo.find(owner.toString(), 'anthropic')).toBeNull();
+    expect((await repo.activeAi(other.toString()))?.provider).toBe('anthropic');
+  });
+  it('rechaza autorizaciones ausentes, proveedores no implementados y remitentes incompletos', () => {
+    expect(() => PersonalProviderCredentials.create('openai', 'sk-openai_personal_123456789', 'test-model', '', false)).toThrow('Autoriza');
+    expect(() => PersonalProviderCredentials.create('whatsapp', 'whatever_123456789', '', '', true)).toThrow('compatible');
+    expect(() => PersonalProviderCredentials.create('resend', 're_secret_personal_123456789', '', '', true)).toThrow('remitente');
+    expect(() => PersonalProviderCredentials.create('openai', 'sk-openai_personal_123456789', 'model\nInjected', '', true)).toThrow('modelo');
+  });
+});
 
 describe('persistencia cifrada de credenciales de integraciones', () => {
   it('cifra pasarelas al escribir y preserva un secreto omitido', async () => {

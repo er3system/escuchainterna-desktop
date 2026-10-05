@@ -1,5 +1,7 @@
 # Seguridad
 
+En PC 0.4.0, las claves opcionales de Resend/OpenAI/Anthropic se guardan cifradas con contexto de fila, proveedor y dueño. Las acciones requieren permiso de configuración clínica y nunca aceptan el dueño desde el formulario. Los adaptadores leen únicamente la configuración autorizada del dueño; no heredan credenciales globales de plataforma. Desconectar elimina la clave del almacenamiento activo. Las versiones y respaldos antiguos cifrados pueden conservarla: para invalidarla también hay que revocarla en el proveedor.
+
 No publiques expedientes, datos personales, contraseñas ni claves en issues, capturas o pull requests.
 
 Para reportar una vulnerabilidad utiliza la sección **Security → Report a vulnerability** de este repositorio. Si no está disponible, contacta al mantenedor mediante su perfil de GitHub antes de compartir detalles que permitan explotar la falla.

@@ -1,4 +1,6 @@
 import { EMAIL_FROM, emailChannel } from '../config/channels';
+import { isDesktopEdition } from '../config/desktopEdition';
+import { SqlitePersonalProviderRepository } from '@/contexts/practitioner/infrastructure/persistence/SqlitePersonalProviderRepository';
 
 export interface TransactionalEmail {
   to: string;
@@ -21,26 +23,31 @@ export interface EmailSendResult {
  *
  * Resend es un POST HTTPS simple; sustituirlo por otro SMTP/API es cambiar este archivo.
  */
-export async function sendTransactionalEmail(email: TransactionalEmail): Promise<EmailSendResult> {
-  if (!emailChannel().configured) return { sent: false, reason: 'sin_proveedor' };
+export async function sendTransactionalEmail(email: TransactionalEmail, ownerUserId?: string): Promise<EmailSendResult> {
   try {
+    const personal = isDesktopEdition() && ownerUserId ? await new SqlitePersonalProviderRepository().find(ownerUserId, 'resend') : null;
+    const apiKey = isDesktopEdition() ? personal?.api_key : process.env.RESEND_API_KEY;
+    const sender = isDesktopEdition() ? personal?.sender : EMAIL_FROM;
+    if (!apiKey || !sender || (!isDesktopEdition() && !emailChannel().configured)) return { sent: false, reason: 'sin_proveedor' };
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
+      signal: AbortSignal.timeout(30_000),
+      redirect: 'error',
       headers: {
-        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+        Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: EMAIL_FROM,
+        from: sender,
         to: [email.to],
         subject: email.subject.trim() || 'Mensaje de EscuchaInterna',
         text: email.body,
-        html: email.body.replace(/\n/g, '<br>'),
+        html: /<html[\s>]/i.test(email.body) ? email.body : email.body.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>'),
       }),
     });
     if (!response.ok) return { sent: false, reason: `Resend respondió ${response.status}` };
     return { sent: true };
   } catch (error) {
-    return { sent: false, reason: error instanceof Error ? error.message : 'fallo de red' };
+    return { sent: false, reason: 'No se pudo contactar con Resend.' };
   }
 }

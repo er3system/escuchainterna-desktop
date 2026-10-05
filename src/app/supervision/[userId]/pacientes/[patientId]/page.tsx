@@ -110,7 +110,7 @@ export default async function SupervisedPatientPage({
         supervisedUserId={userId}
         patientId={patientId}
         patientName={patient.fullName}
-        provider={await sessionInsightsProviderName()}
+        provider={await sessionInsightsProviderName(supervisorId)}
       />
 
       <div className="space-y-8">

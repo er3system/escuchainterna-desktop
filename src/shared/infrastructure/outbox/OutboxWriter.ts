@@ -1,6 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import { getDatabaseAdapter } from '../persistence/SqliteAdapter';
 import { sendTransactionalEmail } from '../notifications/ResendEmailSender';
+import { isDesktopEdition } from '../config/desktopEdition';
+import { SqlitePersonalProviderRepository } from '@/contexts/practitioner/infrastructure/persistence/SqlitePersonalProviderRepository';
 
 export type OutboxChannel = 'whatsapp' | 'email';
 
@@ -41,10 +43,14 @@ export interface OutboxMessageInput {
 export async function writeOutboxMessage(input: OutboxMessageInput): Promise<string> {
   const id = randomUUID();
   const now = new Date().toISOString();
+  const desktop = isDesktopEdition();
+  const emailConfigured = desktop && input.channel === 'email' && input.ownerUserId
+    ? Boolean(await new SqlitePersonalProviderRepository().find(input.ownerUserId, 'resend')) : false;
+  const status = desktop ? (emailConfigured ? 'pendiente' : 'omitido') : 'enviado';
   await getDatabaseAdapter().execute(
     `INSERT INTO outbox_messages
-      (id, channel, recipient, recipient_name, template, subject, body, status, booking_id, patient_id, owner_user_id, created_at, sent_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, 'enviado', ?, ?, ?, ?, ?)`,
+      (id, channel, recipient, recipient_name, template, subject, body, status, booking_id, patient_id, owner_user_id, created_at, sent_at, next_attempt_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       id,
       input.channel,
@@ -53,11 +59,13 @@ export async function writeOutboxMessage(input: OutboxMessageInput): Promise<str
       input.template,
       input.subject ?? '',
       input.body,
+      status,
       input.bookingId ?? null,
       input.patientId ?? null,
       input.ownerUserId ?? null,
       now,
-      now,
+      desktop ? null : now,
+      emailConfigured ? new Date(Date.now() + 120_000).toISOString() : null,
     ],
   );
   // Canal listo (CANAL): el outbox es siempre la bitácora in-app; además, si hay un
@@ -72,13 +80,16 @@ export async function writeOutboxMessage(input: OutboxMessageInput): Promise<str
   // paciente, datos de la sesión, ligas). Al activar RESEND_API_KEY ese contenido sale a un
   // tercero (Resend, EE. UU.); minimiza el cuerpo y/o registra al encargado en el aviso de
   // privacidad (Ley 1581) antes de hacerlo.
-  if (input.channel === 'email' && input.recipient.includes('@')) {
+  if (input.channel === 'email' && input.recipient.includes('@') && (!desktop || emailConfigured)) {
     getDatabaseAdapter().afterCommit(() => {
       void sendTransactionalEmail({
         to: input.recipient,
         subject: input.subject ?? '',
         body: input.body,
-      }).then(async (result) => {
+      }, input.ownerUserId).then(async (result) => {
+        if (desktop && result.sent) {
+          await getDatabaseAdapter().execute("UPDATE outbox_messages SET status = 'enviado', sent_at = ?, next_attempt_at = NULL WHERE id = ?", [new Date().toISOString(), id]);
+        }
         if (result.reason && result.reason !== 'sin_proveedor') {
           // El envío REAL falló (proveedor conectado): en vez de 'fallido' definitivo, RE-ENCOLA
           // para reintento durable por el worker (processOutbox, vía /api/jobs/run) con backoff.
@@ -94,7 +105,7 @@ export async function writeOutboxMessage(input: OutboxMessageInput): Promise<str
             /* fire-and-forget: nunca propagar */
           }
         }
-      });
+      }).catch(() => { /* El registro pendiente permite reintentar sin exponer errores del proveedor. */ });
     });
   }
   return id;

@@ -42,7 +42,7 @@ function MessageRow({ entry, locallyRecorded }: { entry: OutboxLogEntry; locally
             </span>
             {entry.status === 'omitido' ? (
               <span className="shrink-0 rounded-full bg-warning-soft px-2 py-0.5 text-[11px] font-medium text-warning">
-                Omitido: límite del plan
+                {locallyRecorded ? 'Solo local · sin enviar' : 'Omitido'}
               </span>
             ) : null}
           </div>

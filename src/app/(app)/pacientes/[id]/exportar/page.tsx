@@ -53,7 +53,7 @@ export default async function ExportarPage({ params }: { params: Promise<{ id: s
     diagnoses: new SqliteDiagnosisRepository(ownerUserId),
     identity: new SqliteProfessionalIdentityReader(ownerUserId),
   }).execute(id);
-  const provider = await sessionInsightsProviderName();
+  const provider = await sessionInsightsProviderName(ownerUserId);
   const countries = COUNTRY_GUIDELINES.map((country) => ({ code: country.code, name: country.name }));
   // Bitácora (v3 §1.2): últimos accesos al expediente de ESTE paciente.
   const accesses = await listPatientAccessLog(ownerUserId, id, 10);

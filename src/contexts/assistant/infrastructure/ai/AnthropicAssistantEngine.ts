@@ -23,7 +23,7 @@ import {
  * por su nombre de pila cuando lo conoce y usa el nombre del paciente con
  * naturalidad, sin perder precisión clínica.
  */
-function buildSystemPrompt(professionalName: string): string {
+export function buildSystemPrompt(professionalName: string): string {
   const persona = professionalName
     ? `Acompañas a ${professionalName}: salúdale y dirígete a él/ella por su nombre de pila con calidez y respeto profesional (sin exagerar: una vez por respuesta basta).`
     : 'Acompañas a un/a profesional de la psicología; trátale con calidez y respeto profesional.';
