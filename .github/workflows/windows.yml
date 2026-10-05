@@ -1,0 +1,41 @@
+name: Verificar y empaquetar Windows
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 40
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run desktop:test
+      - run: npm run desktop:build
+      - run: npx playwright install chromium
+      - run: node scripts/desktop-e2e.mjs
+      - run: npm run desktop:package
+      - run: npm run desktop:smoke
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EscuchaInterna-Windows-x64
+          path: |
+            release/*.exe
+            release/*.sha256
+          if-no-files-found: error
+          retention-days: 14

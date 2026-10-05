@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 88" width="360" height="88">
+  <g fill="none" stroke="#5b5bd6" stroke-linecap="round">
+    <path d="M44 14 a30 30 0 0 1 0 60" stroke-width="7"/>
+    <path d="M38 24 a20 20 0 0 1 0 40" stroke-width="6" opacity="0.75"/>
+    <path d="M32 34 a10 10 0 0 1 0 20" stroke-width="5" opacity="0.5"/>
+  </g>
+  <circle cx="22" cy="44" r="7" fill="#5b5bd6"/>
+  <text x="86" y="56" font-family="Segoe UI, Inter, system-ui, sans-serif" font-size="34" font-weight="700" fill="#1a1d27">escucha<tspan fill="#5b5bd6">interna</tspan></text>
+</svg>

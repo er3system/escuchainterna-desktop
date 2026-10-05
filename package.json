@@ -1,0 +1,76 @@
+{
+  "name": "escuchainterna",
+  "version": "0.2.0",
+  "private": true,
+  "description": "EscuchaInterna — plataforma de gestión de consulta para psicólogos: agenda, pacientes, expedientes con historia clínica, diagnóstico CIE-11, pagos, marketing y biblioteca.",
+  "scripts": {
+    "dev": "next dev",
+    "dev:fresh": "node -e \"require('fs').rmSync('.next',{recursive:true,force:true})\" && next dev",
+    "build": "node scripts/next-isolated.mjs build",
+    "start": "node scripts/next-isolated.mjs start",
+    "build:local": "node scripts/next-isolated.mjs build",
+    "start:local": "node scripts/next-isolated.mjs start",
+    "typecheck": "tsc --noEmit",
+    "db:reset": "node scripts/reset-db.mjs",
+    "db:backup": "node scripts/backup-db.mjs",
+    "test": "vitest run",
+    "lint": "eslint \"src/**/*.{ts,tsx}\" \"tests/**/*.ts\"",
+    "db:migrate": "tsx bin/migrate.ts",
+    "db:seed": "tsx bin/seed.ts",
+    "db:encrypt-integrations": "tsx bin/encrypt-integration-configs.ts",
+    "empaquetar:hostinger": "node scripts/empaquetar-hostinger.mjs",
+    "desktop:build": "node scripts/desktop-build.mjs",
+    "desktop:package": "electron-builder --config desktop/electron-builder.cjs --win nsis --x64",
+    "desktop:dir": "electron-builder --config desktop/electron-builder.cjs --win --x64 --dir",
+    "desktop:smoke": "node scripts/desktop-smoke.mjs",
+    "desktop:test": "node --test desktop/tests/*.test.cjs",
+    "desktop:start": "electron desktop"
+  },
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.104.1",
+    "@haskou/value-objects": "^1.1.0",
+    "date-fns": "^4.1.0",
+    "gsap": "^3.15.0",
+    "lucide-react": "^0.475.0",
+    "next": "^15.5.27",
+    "otplib": "^13.4.1",
+    "papaparse": "^5.4.1",
+    "pg": "^8.22.0",
+    "qrcode": "^1.5.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "recharts": "^2.15.0"
+  },
+  "overrides": {
+    "postcss": "8.5.29",
+    "sharp": "0.35.5",
+    "uuid": "11.1.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.0.0",
+    "@types/node": "^24.0.0",
+    "@types/papaparse": "^5.3.15",
+    "@types/pg": "^8.20.0",
+    "@types/qrcode": "^1.5.6",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "electron": "44.5.1",
+    "electron-builder": "26.15.3",
+    "eslint": "^9.39.4",
+    "playwright": "^1.60.0",
+    "tailwindcss": "^4.0.0",
+    "tsx": "^4.22.4",
+    "typescript": "^5.7.0",
+    "typescript-eslint": "^8.62.0",
+    "vite-tsconfig-paths": "^6.1.1",
+    "vitest": "^4.1.8"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/er3system/escuchainterna-desktop.git"
+  }
+}

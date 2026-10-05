@@ -1,0 +1,51 @@
+# dependencias
+node_modules/
+
+# next
+.next/
+.next-build/
+.next-pgdev/
+out/
+
+# datos locales (biblioteca de 5.7GB, base de datos, archivos subidos)
+data/biblioteca/
+data/*.db
+data/*.db-journal
+data/*.db-shm
+data/*.db-wal
+data/uploads/
+data/backups/
+data/extract-log.txt
+
+# skills de referencia
+.skills/
+
+# entorno
+.env*.local
+.env
+.env.*
+!.env.example
+!.env.hostinger.example
+
+# herramientas y configuración personal del desarrollador
+.agents/
+.codex/
+.mcp.json
+scratch-*
+
+# artefactos del programa y exportación pública (nunca datos de usuarios)
+.next-desktop/
+.desktop-build/
+dist-desktop/
+release/
+.open-source-publish/
+
+# paquetes de despliegue (se generan con npm run empaquetar:hostinger)
+escuchainterna-hostinger-*.zip
+dist-para-hostinger.zip
+
+# sistema
+Thumbs.db
+.DS_Store
+*.tsbuildinfo
+next-env.d.ts

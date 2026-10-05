@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#5b5bd6" />
+    <title>Sin conexión — EscuchaInterna</title>
+    <style>
+      :root {
+        color-scheme: light;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f6f6fb;
+        color: #1a1d27;
+        font-family: 'Segoe UI', Inter, system-ui, -apple-system, sans-serif;
+        padding: 24px;
+      }
+      .tarjeta {
+        max-width: 26rem;
+        width: 100%;
+        background: #ffffff;
+        border: 1px solid #e4e4ef;
+        border-radius: 16px;
+        box-shadow: 0 8px 24px rgba(26, 29, 39, 0.06);
+        padding: 36px 32px;
+        text-align: center;
+      }
+      .marca {
+        font-size: 1.25rem;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+      }
+      .marca span {
+        color: #5b5bd6;
+      }
+      .espiral {
+        margin: 0 auto 18px;
+        display: block;
+      }
+      h1 {
+        font-size: 1.15rem;
+        margin: 18px 0 8px;
+      }
+      p {
+        margin: 0;
+        font-size: 0.92rem;
+        line-height: 1.55;
+        color: #5c6270;
+      }
+      button {
+        margin-top: 22px;
+        border: 0;
+        border-radius: 10px;
+        background: #5b5bd6;
+        color: #ffffff;
+        font-size: 0.92rem;
+        font-weight: 600;
+        padding: 10px 22px;
+        cursor: pointer;
+        font-family: inherit;
+      }
+      button:hover {
+        background: #4a4ac2;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="tarjeta">
+      <svg class="espiral" width="64" height="64" viewBox="8 8 72 72" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <g fill="none" stroke="#5b5bd6" stroke-linecap="round">
+          <path d="M44 14 a30 30 0 0 1 0 60" stroke-width="7" />
+          <path d="M38 24 a20 20 0 0 1 0 40" stroke-width="6" opacity="0.75" />
+          <path d="M32 34 a10 10 0 0 1 0 20" stroke-width="5" opacity="0.5" />
+        </g>
+        <circle cx="22" cy="44" r="7" fill="#5b5bd6" />
+      </svg>
+      <p class="marca">escucha<span>interna</span></p>
+      <h1>Parece que no hay conexión</h1>
+      <p>
+        No pudimos cargar esta página. Revisa tu conexión a internet y vuelve a intentarlo;
+        tu información sigue segura en la plataforma.
+      </p>
+      <button type="button" onclick="location.reload()">Reintentar</button>
+    </main>
+  </body>
+</html>

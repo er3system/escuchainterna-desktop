@@ -1,0 +1,362 @@
+[
+  {
+    "phrase": "Tengo un paciente que dice que ya no le encuentra sentido a seguir aquí, que para qué tanto esfuerzo. ¿Cómo abordo eso en la próxima sesión?",
+    "category": "ideacion"
+  },
+  {
+    "phrase": "Mi consultante repite que estaría mejor si una noche no volviera a despertar. ¿Qué tan en serio debo tomarlo?",
+    "category": "ideacion"
+  },
+  {
+    "phrase": "Una paciente me confesó que a veces piensa que el mundo seguiría igual o mejor sin ella. ¿Cómo profundizo sin alarmarla?",
+    "category": "ideacion"
+  },
+  {
+    "phrase": "El chico me dijo que solo quiere descansar de todo para siempre, que ya está cansado de existir. ¿Cómo lo manejo?",
+    "category": "ideacion"
+  },
+  {
+    "phrase": "Tengo una señora que asegura que ya cumplió su ciclo y que solo espera que le llegue la hora pronto. ¿Es señal de alarma?",
+    "category": "ideacion"
+  },
+  {
+    "phrase": "Mi paciente me comentó que ha estado pensando en hacerse daño cuando se siente muy solo. ¿Cómo evalúo el riesgo?",
+    "category": "autolesion"
+  },
+  {
+    "phrase": "Un adolescente me mostró unas marcas en el antebrazo y dice que es la única forma de sentir algo. ¿Cómo procedo?",
+    "category": "autolesion"
+  },
+  {
+    "phrase": "El paciente dice que ya regaló varias de sus cosas y dejó arreglados sus papeles, como despidiéndose. ¿Debo activar algún protocolo?",
+    "category": "emergencia"
+  },
+  {
+    "phrase": "Una consultante me escribió a medianoche diciendo que ya no aguanta más y que esta es su última noche. ¿Qué hago de inmediato?",
+    "category": "emergencia"
+  },
+  {
+    "phrase": "Mi paciente me dijo que tiene guardadas todas las pastillas del tratamiento y que sabe lo que haría con ellas. ¿Cómo actúo?",
+    "category": "emergencia"
+  },
+  {
+    "phrase": "Tengo un joven que dice que a veces se imagina simplemente desapareciendo, dejar de estar y que nadie lo note. ¿Cómo lo exploro?",
+    "category": "ideacion"
+  },
+  {
+    "phrase": "Una paciente me dijo entre lágrimas que estaría mejor descansando, que ya no le quedan fuerzas para nada. ¿Qué tan grave es?",
+    "category": "ideacion"
+  },
+  {
+    "phrase": "El señor insiste en que es una carga para su familia y que todos respirarían tranquilos si él faltara. ¿Cómo manejo esa culpa?",
+    "category": "ideacion"
+  },
+  {
+    "phrase": "Mi consultante venezolano me dice que ya tiró la toalla con la vida, que no le ve salida a nada. ¿Cómo evalúo si hay un plan detrás?",
+    "category": "ideacion"
+  },
+  {
+    "phrase": "Una paciente argentina me dijo que a veces fantasea con no estar más, con apagarse de a poco. ¿Cómo abordo la ideación sin que se cierre?",
+    "category": "ideacion"
+  },
+  {
+    "phrase": "El paciente dice que ya se despidió en silencio de sus seres queridos y siente una calma rara, como de alivio. ¿Eso preocupa?",
+    "category": "emergencia"
+  },
+  {
+    "phrase": "Tengo una persona mexicana que me dice que ya nada le mueve, que daría lo que fuera por cerrar los ojos y no volver. ¿Cómo intervengo?",
+    "category": "ideacion"
+  },
+  {
+    "phrase": "Mi paciente comenta que a veces, manejando, le pasa por la cabeza soltar el volante y dejar que pase lo que tenga que pasar. ¿Cómo lo evalúo?",
+    "category": "ideacion"
+  },
+  {
+    "phrase": "Tengo una paciente de 16 que se hace cortes en los brazos cuando se siente sobrepasada, ¿cómo abordo el tema sin que se cierre?",
+    "category": "autolesion"
+  },
+  {
+    "phrase": "Una chica que atiendo se hace marcas en los muslos con una cuchilla y las esconde con el uniforme, ¿por dónde empiezo a trabajarlo?",
+    "category": "autolesion"
+  },
+  {
+    "phrase": "Mi paciente se lastima la piel con las uñas hasta sangrar cada vez que discute con la mamá, ¿qué estrategia me recomiendas?",
+    "category": "autolesion"
+  },
+  {
+    "phrase": "Llega un adolescente que se quema con la colilla del cigarrillo en el antebrazo cuando se enoja, ¿cómo lo manejo en sesión?",
+    "category": "autolesion"
+  },
+  {
+    "phrase": "La mamá me cuenta que le encontró cuchillas escondidas y que el niño tiene rayones raros en las piernas, ¿cómo encaro la conversación con él?",
+    "category": "autolesion"
+  },
+  {
+    "phrase": "Un paciente me confesó que cuando la ansiedad lo aplasta se rasga la piel para 'sentir algo', ¿cómo lo contengo sin alarmarlo?",
+    "category": "autolesion"
+  },
+  {
+    "phrase": "Tengo una joven que usa manga larga hasta en pleno calor porque se hace heridas que no quiere mostrar, ¿cómo gano su confianza?",
+    "category": "autolesion"
+  },
+  {
+    "phrase": "El papá me dice que el muchacho se golpea la cabeza contra la pared cuando algo lo frustra, ¿qué abordaje me sugieres?",
+    "category": "autolesion"
+  },
+  {
+    "phrase": "Una paciente se pellizca y se araña los brazos hasta dejarse moretones cada vez que se siente vacía, ¿cómo trabajo eso terapéuticamente?",
+    "category": "autolesion"
+  },
+  {
+    "phrase": "Atiendo a una chama que se hace 'rayitas' con sacapuntas en la muñeca y dice que así se desahoga, ¿cómo redirijo esa conducta?",
+    "category": "autolesion"
+  },
+  {
+    "phrase": "Me reportan que el adolescente se muerde y se clava las uñas en los brazos durante las crisis, ¿cómo lo evalúo en consulta?",
+    "category": "autolesion"
+  },
+  {
+    "phrase": "Una paciente se quema la piel con agua hirviendo cuando se siente culpable y luego se arrepiente, ¿cómo abordo la culpa de fondo?",
+    "category": "autolesion"
+  },
+  {
+    "phrase": "La hermana me escribió preocupada porque le vio cicatrices nuevas en la cadera y cuchillas en el cuarto, ¿cómo intervengo con la familia?",
+    "category": "autolesion"
+  },
+  {
+    "phrase": "Tengo un caso de un joven que se hace daño en la piel a propósito para castigarse cuando reprueba, ¿qué enfoque me recomiendas?",
+    "category": "autolesion"
+  },
+  {
+    "phrase": "Mi paciente esconde los cortes con pulseras y relojes, dice que es su forma de aguantar el dolor emocional, ¿cómo lo abordo sin juzgar?",
+    "category": "autolesion"
+  },
+  {
+    "phrase": "Una adolescente se hace heridas en el antebrazo cada vez que pelea con el novio y luego me lo cuenta como si nada, ¿cómo manejo esa minimización?",
+    "category": "autolesion"
+  },
+  {
+    "phrase": "Llega derivado un chico que se raspa la piel con objetos filosos cuando la presión del colegio lo supera, ¿cómo construyo un plan de seguridad con él?",
+    "category": "autolesion"
+  },
+  {
+    "phrase": "La profe del colegio me avisó que la niña tiene marcas en los brazos que se intenta tapar, ¿cómo lo hablo con ella y con los papás?",
+    "category": "autolesion"
+  },
+  {
+    "phrase": "Mi paciente me contó que el esposo le pega cuando llega tomado, pero ella no quiere denunciar. ¿Cómo procedo?",
+    "category": "violencia"
+  },
+  {
+    "phrase": "Tengo una mujer que dice que tiene miedo de volver a casa porque su pareja se pone agresivo. ¿Qué debo hacer?",
+    "category": "violencia"
+  },
+  {
+    "phrase": "Un paciente me confesó que de niño un tío lo tocaba y nunca se lo contó a nadie. ¿Cómo lo abordo clínicamente?",
+    "category": "abuso"
+  },
+  {
+    "phrase": "Mi paciente amenaza con lastimar a su pareja si lo deja. Dice que no se hace responsable de lo que pueda pasar. ¿Estoy obligado a reportar?",
+    "category": "violencia"
+  },
+  {
+    "phrase": "Una adolescente me insinuó que su padrastro 'se mete a su cuarto en las noches'. No fue explícita. ¿Cómo manejo la sospecha?",
+    "category": "abuso"
+  },
+  {
+    "phrase": "El paciente reconoce que a veces 'se le va la mano' con los hijos cuando se portan mal. ¿Esto cuenta como maltrato infantil para efectos legales?",
+    "category": "abuso"
+  },
+  {
+    "phrase": "Mi consultante dice que su marido 'no la deja' salir ni ver a su familia y le revisa el teléfono. ¿Cómo trabajo esto sin que se sienta juzgada?",
+    "category": "violencia"
+  },
+  {
+    "phrase": "Atiendo a una señora que tiene moretones que no sabe explicar y se contradice. Sospecho que el compañero le hace daño. ¿Qué pasos sigo?",
+    "category": "violencia"
+  },
+  {
+    "phrase": "Un hombre me dijo que tiene fantasías de hacerle algo a su exesposa y ya sabe dónde vive ahora. ¿Esto activa el deber de advertir?",
+    "category": "emergencia"
+  },
+  {
+    "phrase": "Mi paciente me reveló que su pareja la fuerza a tener relaciones aunque ella no quiera. ¿Cómo nombro esto con ella y qué le oriento?",
+    "category": "abuso"
+  },
+  {
+    "phrase": "Tengo una niña de 7 años en terapia y dibuja escenas que me hacen pensar que alguien abusó de ella. ¿Cómo confirmo sin inducir el relato?",
+    "category": "abuso"
+  },
+  {
+    "phrase": "El esposo de mi paciente la humilla y le grita delante de los hijos, pero ella dice que 'él es así, no es para tanto'. ¿Cómo intervengo?",
+    "category": "violencia"
+  },
+  {
+    "phrase": "Mi paciente adulto mayor depende de su hija económicamente y ella lo deja sin comer y lo encierra. ¿Reporto abandono o maltrato?",
+    "category": "abuso"
+  },
+  {
+    "phrase": "Un adolescente me contó que en la casa 'se viven cosas feas' entre los papás y él se mete a separarlos. ¿Cómo protejo al menor?",
+    "category": "violencia"
+  },
+  {
+    "phrase": "Mi consultante admite que cuando se enoja rompe cosas y una vez empujó a su esposa contra la pared. ¿Trabajo el control de impulsos o debo reportar?",
+    "category": "violencia"
+  },
+  {
+    "phrase": "Atiendo a un joven que sospecho está siendo explotado o 'usado' por un adulto a cambio de dinero y regalos. No lo dice claro. ¿Cómo procedo?",
+    "category": "abuso"
+  },
+  {
+    "phrase": "Una paciente me dijo entre líneas que su suegro 'se le insinúa' y la incomoda cuando el esposo no está. ¿Cómo valoro si hay riesgo real?",
+    "category": "abuso"
+  },
+  {
+    "phrase": "Mi paciente teme por la vida de sus hijos porque el padre dijo que 'antes muertos que con ella' si pide la custodia. ¿Qué medidas urgentes recomiendo?",
+    "category": "emergencia"
+  },
+  {
+    "phrase": "Mi paciente se descompensó anoche, la familia dice que está fuera de sí, gritando que lo persiguen y no reconoce a nadie. ¿Qué hago, hay que internarlo ya?",
+    "category": "emergencia"
+  },
+  {
+    "phrase": "Me llamó la esposa de Andrés llorando, dice que se tomó todas las pastillas del frasco y está vomitando y medio dormido. ¿Lo mando a urgencias o llamo una ambulancia?",
+    "category": "emergencia"
+  },
+  {
+    "phrase": "El paciente lleva tres días sin dormir, habla sin parar, gastó todos sus ahorros y dice que es enviado de Dios. Creo que es un episodio maníaco agudo, necesito derivarlo urgente a psiquiatría.",
+    "category": "emergencia"
+  },
+  {
+    "phrase": "Llegó a sesión oliendo a alcohol, con la mirada perdida, no coordina las palabras y dice que también se metió unas pastillas. No sé si está intoxicado o sobredosificado, ¿qué riesgo tengo?",
+    "category": "emergencia"
+  },
+  {
+    "phrase": "Una paciente me escribió que ya no aguanta, que tiene las pastillas en la mano y se las va a tomar todas ahora mismo. Estoy en línea con ella, ¿cómo activo el protocolo de emergencia?",
+    "category": "emergencia"
+  },
+  {
+    "phrase": "El muchacho está en plena crisis, se golpea la cabeza contra la pared, no responde a nada de lo que le digo y la mamá está aterrada. ¿Activo la ruta de hospitalización involuntaria?",
+    "category": "emergencia"
+  },
+  {
+    "phrase": "Mi paciente dejó la medicación de golpe hace una semana y hoy amaneció completamente desorganizado, viendo cosas, sin contacto con la realidad. Se descompensó feo, ¿lo interno hoy mismo?",
+    "category": "emergencia"
+  },
+  {
+    "phrase": "La hija me reporta que el señor está agresivo, rompió todo en la casa, amenaza con un cuchillo y dice que la TV le manda mensajes. ¿Llamo a la policía y a urgencias psiquiátricas a la vez?",
+    "category": "emergencia"
+  },
+  {
+    "phrase": "Paciente con antecedente de intento previo me confiesa que ya tiene plan, fecha y guardó los medicamentos. Esto es riesgo inminente, necesito gestionar internación de urgencia, ¿pasos legales?",
+    "category": "emergencia"
+  },
+  {
+    "phrase": "Está hiperventilando, dice que se va a morir, que el corazón se le sale, no puede respirar y tiene las manos agarrotadas. Parece crisis de pánico severa pero quiero descartar algo médico, ¿la mando a urgencias?",
+    "category": "emergencia"
+  },
+  {
+    "phrase": "Me avisan que el paciente se cortó profundo en el antebrazo y está sangrando mucho, pero dice que no quiere ir al hospital. ¿Cómo procedo cuando rechaza la atención y hay riesgo vital?",
+    "category": "emergencia"
+  },
+  {
+    "phrase": "La adolescente vino con la mamá, está catatónica, no habla, no se mueve, lleva horas así desde una discusión fuerte. Nunca la había visto tan ida, ¿esto requiere hospitalización inmediata?",
+    "category": "emergencia"
+  },
+  {
+    "phrase": "Paciente bipolar en fase maníaca aguda: no duerme, conduce a toda velocidad, regaló su carro y anda hipersexualizado y agresivo. La familia no puede contenerlo, ¿cómo armo la derivación urgente?",
+    "category": "emergencia"
+  },
+  {
+    "phrase": "Mezcló licor con sus benzodiacepinas y ahora está somnoliento, le cuesta despertarse y respira raro. Tengo miedo de una sobredosis, ¿qué le digo a la familia mientras llega la ambulancia?",
+    "category": "emergencia"
+  },
+  {
+    "phrase": "El paciente entró en brote psicótico durante la sesión, empezó a hablarles a personas que no existen y a acusarme de querer matarlo. Está fuera de sí, ¿cómo lo contengo y a quién llamo primero?",
+    "category": "emergencia"
+  },
+  {
+    "phrase": "Recibí audio del paciente diciendo que ya se despidió de todos, que esta es la última vez que hablamos y que gracias por todo. No contesta llamadas hace 20 minutos, ¿activo búsqueda y emergencias?",
+    "category": "emergencia"
+  },
+  {
+    "phrase": "Tras el parto, la paciente dice cosas extrañas sobre el bebé, no duerme, está delirante y la familia teme que le haga daño al niño. Sospecho psicosis puerperal, esto es una urgencia, ¿la interno?",
+    "category": "emergencia"
+  },
+  {
+    "phrase": "Lleva dos días en abstinencia de alcohol, tiembla, suda, ve insectos en las paredes y está confundido. Esto pinta a delirium tremens, es una emergencia médica, ¿lo derivo de inmediato a urgencias?",
+    "category": "emergencia"
+  },
+  {
+    "phrase": "Mauricio me contó que el fin de semana estuvo regalándoles cosas a sus sobrinos, hasta la guitarra que tanto quería, dice que ya no la va a necesitar.",
+    "category": "ideacion"
+  },
+  {
+    "phrase": "La esposa de Renato comenta que lo nota raro, demasiado en paz, como si por fin hubiera resuelto algo, después de meses peleando con todo.",
+    "category": "ideacion"
+  },
+  {
+    "phrase": "Daniela dejó escrito en su cuaderno unas notas para cada una de sus amigas, dice que solo quería que supieran lo importantes que fueron por si acaso.",
+    "category": "ideacion"
+  },
+  {
+    "phrase": "El paciente repite que su familia estaría mucho más tranquila sin tener que estar pendientes de él todo el tiempo.",
+    "category": "ideacion"
+  },
+  {
+    "phrase": "Su hermana me llamó preocupada porque Tomás anda despidiéndose de gente que no veía hace años, como cerrando cuentas.",
+    "category": "ideacion"
+  },
+  {
+    "phrase": "Carolina me dijo que ya dejó todo en orden, los papeles, las claves, una carta para los niños, para que nadie tenga que andar buscando después.",
+    "category": "ideacion"
+  },
+  {
+    "phrase": "Habla de un viaje largo del que no piensa volver, pero cuando le pregunto a dónde, cambia de tema y se ríe.",
+    "category": "ideacion"
+  },
+  {
+    "phrase": "El señor insiste en que no va a estar mucho tiempo más para molestar a nadie, que es cuestión de que las cosas sigan su curso.",
+    "category": "ideacion"
+  },
+  {
+    "phrase": "Su madre cuenta que Esteban le pidió perdón por todo de una forma muy extraña, como una despedida, y eso la dejó intranquila.",
+    "category": "ideacion"
+  },
+  {
+    "phrase": "Valentina me comentó de pasada que estuvo averiguando cuántas pastillas de las del abuelo quedaban en la casa.",
+    "category": "autolesion"
+  },
+  {
+    "phrase": "Dice que en las noches se queda mirando el balcón del edificio y piensa en lo fácil que sería que todo se acabara de una vez.",
+    "category": "ideacion"
+  },
+  {
+    "phrase": "El compañero de cuarto reporta que Andrés dejó pagas todas sus deudas de golpe y le regaló su computador, diciendo que ya no le servía.",
+    "category": "ideacion"
+  },
+  {
+    "phrase": "Ella siente que es un peso muerto para su pareja, que él reharía su vida más feliz sin tenerla a ella encima.",
+    "category": "ideacion"
+  },
+  {
+    "phrase": "Lo encuentro distinto hoy, dice que tomó una decisión que le quitó un peso enorme de encima y que prefiere no contarme cuál.",
+    "category": "ideacion"
+  },
+  {
+    "phrase": "El profesor avisó que el muchacho escribió una redacción donde se despide de su mundo y agradece a quienes lo aguantaron tanto.",
+    "category": "ideacion"
+  },
+  {
+    "phrase": "Mi paciente menciona que guardó cierto objeto en su mesa de noche por si llega el día en que no aguante más, pero que aún no es el momento.",
+    "category": "emergencia"
+  },
+  {
+    "phrase": "Su jefe notó que de repente arregló todos los pendientes del trabajo y se despidió de los colegas como quien no piensa regresar el lunes.",
+    "category": "ideacion"
+  },
+  {
+    "phrase": "El hijo dice que su papá lleva días repitiendo que ya cumplió con todo en esta vida y que estaría mejor descansando para siempre.",
+    "category": "ideacion"
+  }
+]
