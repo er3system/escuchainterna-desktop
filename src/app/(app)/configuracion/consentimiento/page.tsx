@@ -4,6 +4,8 @@ import { SqliteConsentTemplateRepository } from '@/contexts/clinical-records/inf
 import { requireClinicalConfigAccess } from '@/shared/infrastructure/auth/dataOwner';
 import { PageHeader } from '@/components/ui';
 import { ConsentTemplateForm } from './ConsentTemplateForm';
+import Link from 'next/link';
+import { isDesktopEdition } from '@/shared/infrastructure/config/desktopEdition';
 
 export const metadata: Metadata = {
   title: 'Consentimiento informado · EscuchaInterna',
@@ -19,9 +21,10 @@ export default async function ConsentimientoConfigPage() {
     <div>
       <PageHeader
         title="Consentimiento informado"
-        subtitle="La plantilla que firman tus pacientes: edítala a tu práctica. Desde el expediente la envías con una liga de firma digital o adjuntas la copia firmada en papel."
+        subtitle={isDesktopEdition() ? 'Edita la plantilla de impresión. Puedes adjuntar la copia firmada o recibir documentos desde una carpeta de Drive.' : 'Edita la plantilla que firman tus pacientes. Desde el expediente puedes enviar la liga de firma o adjuntar la copia firmada.'}
       />
       <ConsentTemplateForm title={template.title} body={template.body} />
+      {isDesktopEdition() ? <Link href="/consentimientos" className="mt-5 inline-block text-primary underline">Configurar recepción automática y abrir bandeja →</Link> : null}
     </div>
   );
 }

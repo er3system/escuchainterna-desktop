@@ -32,6 +32,12 @@ Los correos pendientes se reintentan desde **Mensajes**, acotados al dueño aute
 
 El respaldo inicial admite hasta 256 MiB de datos antes de comprimir. Conserva su contraseña: será necesaria para restaurar. Para imprimir o guardar una vista como PDF, usa el menú del programa y el diálogo de Windows.
 
+## Consentimientos recibidos
+
+Desde 0.8.0, **Consulta → Consentimientos** recibe PDF e imágenes desde una carpeta privada de Drive para escritorio. La revisión se ejecuta cada treinta segundos mientras el programa está abierto y tienes una sesión activa. El documento aparece en una bandeja: abre el original, confirma el paciente y la fecha de firma antes de archivarlo. Los códigos generados en el expediente sugieren el paciente; la llegada del archivo no confirma una firma ni autoriza IA.
+
+Puedes colocar archivos directamente en la carpeta o configurar el formulario y script incluidos para recibirlos con Google Forms. La copia local queda cifrada, conserva el original y entra en los respaldos de la consulta. La carpeta de recepción se configura por PC y debe ser distinta de la sincronización cifrada. Consulta [la guía de recepción y configuración de Google](docs/desktop-consent-reception.md).
+
 ## Apariencia y continuidad entre PCs
 
 Elige modo **Día**, **Noche** o **Automático**, con las paletas Bosque, Salvia, Jardín, Océano, Lavanda y Terracota. Se combinan colores de acción y acentos con superficies neutras. La bienvenida y **Configuración → Apariencia** guardan tu elección en este equipo. Las transiciones respetan el movimiento reducido de Windows y se pueden desactivar.

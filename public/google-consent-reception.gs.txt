@@ -1,0 +1,75 @@
+/* EscuchaInterna · recepción de documentos ya firmados · MIT
+ * Pega este archivo en un proyecto propio de https://script.google.com.
+ * 1. Ejecuta crearFormulario y abre el enlace de edición del registro.
+ * 2. Añade UNA pregunta «Subir archivo», obligatoria, PDF o imagen, máximo 10 MB.
+ * 3. Ejecuta conectarRecepcion y autoriza el script en tu cuenta de Google.
+ * 4. En el programa conecta la carpeta mostrada, disponible sin conexión.
+ * 5. Pega el enlace prellenado en Consentimientos. Desde cada paciente prepara su enlace.
+ * No compartas la carpeta de respuestas. No subas expedientes completos al formulario.
+ */
+function crearFormulario() {
+  const properties = PropertiesService.getScriptProperties();
+  if (properties.getProperty('EI_FORM_ID')) {
+    console.log('Formulario existente: ' + FormApp.openById(properties.getProperty('EI_FORM_ID')).getEditUrl());
+    return;
+  }
+  const form = FormApp.create('Entrega de consentimiento firmado');
+  form.setPublishingSummary(false);
+  form.setDescription('Entrega únicamente el consentimiento informado que ya firmaste. Usa el código recibido de tu profesional. La recepción del archivo no confirma por sí sola la firma.');
+  form.addTextItem().setTitle('Código de recepción').setRequired(true);
+  const folder = DriveApp.createFolder('EscuchaInterna - Recepción de consentimientos');
+  properties.setProperties({ EI_FORM_ID: form.getId(), EI_FOLDER_ID: folder.getId() });
+  console.log('Añade una pregunta obligatoria «Subir archivo» aquí: ' + form.getEditUrl());
+  console.log('Carpeta privada de recepción: ' + folder.getUrl());
+}
+
+function conectarRecepcion() {
+  const properties = PropertiesService.getScriptProperties();
+  const form = FormApp.openById(properties.getProperty('EI_FORM_ID'));
+  const uploads = form.getItems(FormApp.ItemType.FILE_UPLOAD);
+  if (uploads.length !== 1) throw new Error('Añade una sola pregunta «Subir archivo» al formulario.');
+  const code = form.getItems(FormApp.ItemType.TEXT).find(item => item.getTitle() === 'Código de recepción');
+  if (!code) throw new Error('Conserva el campo «Código de recepción».');
+  properties.setProperties({ EI_CODE_ITEM: String(code.getId()), EI_UPLOAD_ITEM: String(uploads[0].getId()) });
+  if (!ScriptApp.getProjectTriggers().some(trigger => trigger.getHandlerFunction() === 'recibirConsentimiento')) {
+    ScriptApp.newTrigger('recibirConsentimiento').forForm(form).onFormSubmit().create();
+  }
+  const response = form.createResponse().withItemResponse(code.asTextItem().createResponse('CODIGO'));
+  console.log('Enlace prellenado para pegar en el programa: ' + response.toPrefilledUrl());
+  console.log('Conecta esta carpeta desde Drive para escritorio: ' + DriveApp.getFolderById(properties.getProperty('EI_FOLDER_ID')).getUrl());
+}
+
+function recibirConsentimiento(event) {
+  if (!event || !event.response) throw new Error('Usa el activador de envío del formulario o recuperarRecepciones.');
+  const lock = LockService.getScriptLock(); lock.waitLock(30000);
+  try {
+    const properties = PropertiesService.getScriptProperties();
+    const responses = event.response.getItemResponses();
+    const code = String(responses.find(item => String(item.getItem().getId()) === properties.getProperty('EI_CODE_ITEM'))?.getResponse() || '').trim().toLowerCase();
+    // El código sugiere el paciente; no acredita identidad ni firma. La revisión ocurre en la PC.
+    if (!/^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/.test(code)) throw new Error('Código de recepción inválido.');
+    const upload = responses.find(item => String(item.getItem().getId()) === properties.getProperty('EI_UPLOAD_ITEM'));
+    const fileIds = upload?.getResponse();
+    if (!Array.isArray(fileIds) || fileIds.length < 1 || fileIds.length > 5) throw new Error('Se esperan entre 1 y 5 archivos.');
+    const folder = DriveApp.getFolderById(properties.getProperty('EI_FOLDER_ID'));
+    const responseId = event.response.getId();
+    const hash = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, responseId).map(b => ('0' + ((b + 256) % 256).toString(16)).slice(-2)).join('').slice(0,24);
+    fileIds.forEach((id, index) => {
+      const source = DriveApp.getFileById(id);
+      const extension = { 'application/pdf':'pdf', 'image/png':'png', 'image/jpeg':'jpg', 'image/webp':'webp' }[source.getMimeType()];
+      if (!extension || source.getSize() > 20*1024*1024) throw new Error('Solo PDF, PNG, JPG o WebP de hasta 20 MB.');
+      const filename = code + '__' + hash + '__' + index + '.' + extension;
+      if (!folder.getFilesByName(filename).hasNext()) source.makeCopy(filename, folder);
+    });
+  } finally { lock.releaseLock(); }
+}
+
+/* Reintenta las últimas 20 respuestas sin crear copias repetidas. */
+function recuperarRecepciones() {
+  const properties = PropertiesService.getScriptProperties();
+  const responses = FormApp.openById(properties.getProperty('EI_FORM_ID')).getResponses();
+  responses.slice(-20).forEach(response => {
+    try { recibirConsentimiento({ response: response }); }
+    catch (error) { console.error('No se pudo recuperar una respuesta. Revisa su código y archivos: ' + error.message); }
+  });
+}

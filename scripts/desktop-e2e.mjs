@@ -2,11 +2,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { randomBytes } from 'node:crypto';
+import { randomBytes, randomUUID } from 'node:crypto';
 import { DatabaseSync } from 'node:sqlite';
 import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
 import runtime from '../desktop/runtime.cjs';
+import consentFolder from '../desktop/consent-folder.cjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const buildRoot = path.join(root, '.desktop-build');
@@ -22,6 +23,7 @@ fs.mkdirSync(path.join(catalogs, 'data', 'publicaciones-src', 'html'), { recursi
 fs.writeFileSync(path.join(catalogs, 'data', 'publicaciones-src', 'html', 'publicacion-prueba.html'), '<main class="content"><h1>Lectura de la colección</h1><p>Contenido editorial ficticio sin conexión.</p></main>');
 fs.writeFileSync(path.join(catalogs, 'data', 'publicaciones', 'manifest.json'), JSON.stringify([{ id: 'publicacion-prueba', title: 'Publicación original de prueba', summary: 'Material ficticio.', category: 'Temas clínicos', kind: 'tema', country: '', htmlPath: 'data/publicaciones-src/html/publicacion-prueba.html', pdfPath: '', sources: [] }]));
 const options = {
+  receptionDeviceId: randomUUID(),
   resources: path.join(buildRoot, 'resources'), workspace,
   secrets: { SESSION_SECRET: randomBytes(32).toString('hex'), DATA_ENCRYPTION_KEY: randomBytes(32).toString('hex') },
 };
@@ -194,6 +196,7 @@ try {
   await first.getByRole('link', { name: 'Siguiente', exact: true }).click();
   await first.getByText('38 archivos · Página 2 de 2', { exact: true }).waitFor();
   await first.goto(`${server.origin}/biblioteca/libros?pagina=999&categoria=${encodeURIComponent('Clínica')}`, { waitUntil: 'networkidle' });
+  await first.waitForURL(url => url.searchParams.get('pagina') === '2');
   assert.equal(new URL(first.url()).searchParams.get('pagina'), '2');
   assert.equal(new URL(first.url()).searchParams.get('categoria'), 'Clínica');
   await first.getByRole('link', { name: /Lectura de prueba 38/ }).click();
@@ -247,13 +250,69 @@ try {
   assert.match(patient.consultation_reason, /^enc:v1:/);
   assert.equal(db.prepare('SELECT COUNT(*) AS n FROM subscriptions').get().n, 0);
   db.close();
+  // Recepción en una carpeta de prueba. El puente simulado pertenece solo a este navegador E2E.
+  const receiptFolder = path.join(evidence, 'drive-consents'); fs.mkdirSync(receiptFolder);
+  const selectionProof = consentFolder.signConsentFolderSelection(receiptFolder, patient.owner_user_id, options.secrets.SESSION_SECRET, options.receptionDeviceId);
+  await first.addInitScript(proof => { window.escuchaDesktop = { chooseConsentFolder: async () => proof }; }, selectionProof);
+  await first.goto(`${server.origin}/consentimientos`, { waitUntil: 'networkidle' });
+  const scriptDownload = await first.context().request.get(`${server.origin}/google-consent-reception.gs.txt`);
+  assert.equal(scriptDownload.status(), 200); assert.match(await scriptDownload.text(), /function recibirConsentimiento/);
+  await first.getByRole('button', { name: 'Conectar carpeta', exact: true }).click();
+  await first.getByRole('status').filter({ hasText: '30 segundos' }).waitFor();
+  await first.goto(`${server.origin}/pacientes/${patient.id}`, { waitUntil: 'networkidle' });
+  assert.equal(await first.getByRole('button', { name: 'Enviar al paciente', exact: true }).count(), 0);
+  await first.getByRole('button', { name: 'Preparar recepción', exact: true }).click();
+  const code = await first.locator('code').filter({ hasText: /^[a-f0-9-]{36}$/ }).innerText();
+  const content = 'BT /F1 14 Tf 40 240 Td (Consentimiento ficticio firmado) Tj ET';
+  const objects = ['<< /Type /Catalog /Pages 2 0 R >>', '<< /Type /Pages /Kids [3 0 R] /Count 1 >>', '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 400 300] /Resources << /Font << /F1 5 0 R >> >> /Contents 4 0 R >>', `<< /Length ${content.length} >>\nstream\n${content}\nendstream`, '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>'];
+  let pdf = '%PDF-1.4\n'; const offsets = [];
+  for (const [index, object] of objects.entries()) { offsets.push(Buffer.byteLength(pdf)); pdf += `${index + 1} 0 obj\n${object}\nendobj\n`; }
+  const start = Buffer.byteLength(pdf);
+  pdf += `xref\n0 6\n0000000000 65535 f \n${offsets.map(offset => String(offset).padStart(10, '0') + ' 00000 n \n').join('')}trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n${start}\n%%EOF\n`;
+  const receiptBytes = Buffer.from(pdf);
+  const receiptFilename = `${code}__consentimiento-ficticio.pdf`;
+  fs.writeFileSync(path.join(receiptFolder, receiptFilename), receiptBytes);
+  await first.goto(`${server.origin}/consentimientos`, { waitUntil: 'networkidle' });
+  await first.getByRole('button', { name: 'Revisar ahora', exact: true }).click();
+  await first.goto(`${server.origin}/agenda`, { waitUntil: 'networkidle' });
+  await first.getByRole('link', { name: /1 consentimiento recibido pendiente/ }).waitFor({ timeout: 45000 });
+  await first.getByRole('link', { name: /1 consentimiento recibido pendiente/ }).click();
+  await first.getByRole('heading', { name: 'Pendientes de revisión (1)', exact: true }).waitFor();
+  assert.equal(await first.getByLabel(`Paciente para ${receiptFilename}`).inputValue(), patient.id);
+  const viewerUrl = await first.getByRole('link', { name: 'Abrir documento', exact: true }).getAttribute('href');
+  const documentUrl = viewerUrl.replace('/consentimientos/','/api/consentimientos/');
+  const receiptResponse = await first.context().request.get(`${server.origin}${documentUrl}`);
+  assert.equal(receiptResponse.status(), 200); assert.deepEqual(await receiptResponse.body(), receiptBytes);
+  assert.equal(receiptResponse.headers()['cache-control'], 'private, no-store');
+  await first.screenshot({ path: path.join(evidence,'consentimientos-recibidos.png'), fullPage:true });
+  await first.getByRole('link', { name: 'Abrir documento', exact: true }).click();
+  await first.getByRole('heading', { name: 'Documento recibido', exact:true }).waitFor();
+  assert.equal(await first.locator('iframe[title="Consentimiento recibido"]').getAttribute('src'), documentUrl);
+  await first.getByRole('link',{name:'Volver a la bandeja',exact:true}).click();
+  assert.equal(await first.getByRole('button', { name:'Confirmar y archivar', exact:true }).isDisabled(), true);
+  await first.getByLabel(`Fecha de firma para ${receiptFilename}`).fill('2026-01-02');
+  await first.getByLabel('Revisé la firma y confirmé que este documento corresponde al paciente seleccionado.').check();
+  await first.getByRole('button', { name:'Confirmar y archivar', exact:true }).click();
+  await first.getByRole('heading', { name:'Pendientes de revisión (0)', exact:true }).waitFor();
+  await first.getByText('Historial de recepción (1)',{exact:true}).click();
+  await first.getByText('Archivado · Firma: 2026-01-02',{exact:false}).waitFor();
+  await first.screenshot({ path:path.join(evidence,'consentimientos-historial.png'),fullPage:true });
+  const archivedDb = new DatabaseSync(path.join(workspace,'escuchainterna.db'),{readOnly:true});
+  const archivedConsent = archivedDb.prepare('SELECT ai_authorized,signed_at,file_path FROM patient_consents WHERE patient_id=?').get(patient.id);
+  assert.equal(archivedConsent.ai_authorized,0); assert.equal(archivedConsent.signed_at.slice(0,10),'2026-01-02');
+  assert.notDeepEqual(fs.readFileSync(path.join(workspace,'uploads',archivedConsent.file_path)),receiptBytes); archivedDb.close();
   const anonymous = await browser.newContext();
   const anonymousPage = await anonymous.newPage();
   assert.equal((await anonymous.request.get(`${server.origin}${bookFile}`)).status(), 401);
+  assert.equal((await anonymous.request.get(`${server.origin}${documentUrl}`)).status(),401);
+  assert.equal((await anonymous.request.post(`${server.origin}/api/consentimientos/recepcion`)).status(),401);
+  assert.equal((await first.context().request.post(`${server.origin}/api/consentimientos/recepcion`, { headers: { origin: 'https://untrusted.example.test', 'x-escucha-consent-reception': '1' } })).status(),403);
+  assert.equal((await first.context().request.post(`${server.origin}/api/consentimientos/recepcion`, { headers: { origin: server.origin } })).status(),403);
   await anonymousPage.goto(`${server.origin}/pacientes/${patient.id}`);
   assert.match(anonymousPage.url(), /\/login/);
   const secondContext = await browser.newContext();
   const second = await register(secondContext, 'Otro profesional de prueba', 'segundo@desktop.example.test', true);
+  assert.equal((await secondContext.request.get(`${server.origin}${documentUrl}`)).status(),404);
   await second.screenshot({ path: path.join(evidence, 'registro-drive.png'), fullPage: true });
   await second.goto(`${server.origin}/configuracion/integraciones`, { waitUntil: 'networkidle' });
   assert.equal(await second.getByRole('button', { name: 'Conectar con mi propia clave', exact: true }).count(), 3);
@@ -271,6 +330,7 @@ try {
   assert.equal(errors.length, 0, 'No debe haber errores de JavaScript en el navegador');
   const result = { ok: true, appearancePalettes: 6, appearanceModes: 3, contrastAA: true, distinctSurfaces: true, appearancePersistence: true, systemThemeUpdates: true, reducedMotion: true, quickNavigation: true, mobileKeyboardNavigation: true, originalPublications: true, localBookSearchAndPagination: true, offlineBookReader: true, registration: true, noSubscription: true, patientCreation: true, clinicalEncryption: true, anonymousDenied: true, ownerIsolation: true, persistedAfterRestart: true, browserErrors: errors };
   Object.assign(result, { directSessionEntry: true, dailyActions: true, compactOnboarding: true, communicationDisclosure: true, pcHelp: true, bookReturnContext: true, outOfRangePagination: true, mobileQuickActions: true, noFloatingAssistant: true });
+  Object.assign(result, { consentAutomaticReception: true, consentNativeSelectionProof: true, consentCodeSuggestion: true, consentManualReview: true, consentEncryptedOriginal: true, consentSignedDateSeparate: true, consentOwnerIsolation: true });
   fs.writeFileSync(path.join(evidence, 'result.json'), JSON.stringify(result, null, 2));
   console.log(JSON.stringify({ ...result, evidence }, null, 2));
 } catch (error) {

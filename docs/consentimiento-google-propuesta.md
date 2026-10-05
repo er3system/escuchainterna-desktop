@@ -1,6 +1,6 @@
 # Consentimientos con Google y EscuchaInterna
 
-Propuesta de producto del 5 de octubre de 2026. La recepción automática descrita aquí todavía no está implementada.
+Propuesta de producto del 5 de octubre de 2026. Desde la versión 0.8.0 está implementada la recepción desde una carpeta de Drive y su revisión; la importación de plantillas y la solicitud de firmas quedan pendientes. Consulta [la guía de la recepción disponible](desktop-consent-reception.md).
 
 ## Flujo para la consulta
 
@@ -27,7 +27,7 @@ Google puede recibir documentos mientras la PC esté apagada. El programa actual
 
 Hoy se puede editar una plantilla de texto en **Configuración → Consentimiento informado** y adjuntar un PDF o una imagen firmada desde el consentimiento del paciente. La página de firma que genera la edición local apunta al servidor de esa PC; ese enlace no resuelve por sí solo la firma remota.
 
-Falta importar plantillas de documentos, conservar un historial de versiones visible, recibir desde Drive y revisar las respuestas antes de dar el consentimiento por firmado. Al adjuntar un archivo, el flujo actual registra la fecha de adjunto como fecha de firma; el nuevo flujo debe separar ambas fechas.
+Falta importar y rellenar plantillas de documentos y conservar sus versiones. La recepción de Drive ya conserva un historial y exige revisar el documento antes de archivarlo. En este flujo se separan la recepción, la fecha de firma indicada por el profesional y la revisión. El adjunto manual anterior sigue registrando la fecha de adjunto como fecha de firma.
 
 ## Reglas para implementar
 

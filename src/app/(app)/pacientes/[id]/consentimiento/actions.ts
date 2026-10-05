@@ -15,6 +15,7 @@ import { getAppBaseUrl } from '@/shared/infrastructure/config/appBaseUrl';
 import { writeOutboxMessage } from '@/shared/infrastructure/outbox/OutboxWriter';
 import { writeWhatsappOrOmit } from '@/shared/infrastructure/message-billing/WaBudgetGate';
 import { wrapEmailBodyForOwner } from '@/shared/infrastructure/email-themes/wrapEmailBodyForOwner';
+import { isDesktopEdition } from '@/shared/infrastructure/config/desktopEdition';
 
 export interface ConsentActionState {
   ok: boolean;
@@ -37,6 +38,7 @@ function refresh(patientId: string): void {
  */
 export async function sendConsentAction(patientId: string): Promise<ConsentActionState> {
   const ownerUserId = await requireClinicalRecordWriteAccess(patientId);
+  if (isDesktopEdition()) return { ok: false, error: 'La liga del servidor local no es accesible fuera de esta PC. Prepara la recepción con Drive desde el consentimiento del paciente.' };
   try {
     const issued = await new IssuePatientConsent(
       new SqlitePatientConsentRepository(ownerUserId),

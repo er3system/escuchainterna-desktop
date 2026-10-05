@@ -33,7 +33,7 @@ try {
   assert.match(await page.title(), /Gestión de consulta para Windows/);
   assert.equal(await page.locator('h1').count(), 1);
   assert.equal(await page.locator('a[href="https://ko-fi.com/laroc"]').count(), 3);
-  assert(await page.locator('[aria-labelledby="hero-title"]').getByRole('link', { name: 'Descargar para Windows', exact: true }).getAttribute('href').then(href => href.includes('releases/tag/v0.7.1')));
+  assert(await page.locator('[aria-labelledby="hero-title"]').getByRole('link', { name: 'Descargar para Windows', exact: true }).getAttribute('href').then(href => href.includes('releases/tag/v0.8.0')));
   assert(!/Prueba gratis|7 días gratis|Cancela cuando quieras/.test(await page.locator('body').innerText()));
   assert.equal(await page.locator('link[rel="canonical"]').getAttribute('href'), 'https://escuchainterna.com');
   const social = await context.request.get('http://127.0.0.1:3117/showcase/social.png');

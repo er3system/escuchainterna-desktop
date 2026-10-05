@@ -32,6 +32,7 @@ import { TratadoEnCard } from './TratadoEnCard';
 import { PatientOverviewCard, type PatientOverview } from './PatientOverviewCard';
 import { PatientNotesCard } from './PatientNotesCard';
 import { ConsentCard, type ConsentCardData } from './consentimiento/ConsentCard';
+import { isDesktopEdition } from '@/shared/infrastructure/config/desktopEdition';
 import { NewReminderForm } from '../../notificaciones/NewReminderForm';
 
 export default async function ResumenPage({ params }: { params: Promise<{ id: string }> }) {
@@ -205,7 +206,7 @@ export default async function ResumenPage({ params }: { params: Promise<{ id: st
       clinicalSummary={clinicalSummary}
       sedeCard={sedeCard}
       overviewCard={<PatientOverviewCard data={overview} />}
-      consentCard={assistantView ? null : <ConsentCard patientId={id} consent={consentData} />}
+      consentCard={assistantView ? null : <ConsentCard patientId={id} consent={consentData} desktop={isDesktopEdition()} />}
       reminderCard={reminderCard}
       notesCard={notesCard}
       clinicalAccess={!assistantView}

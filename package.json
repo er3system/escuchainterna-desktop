@@ -1,6 +1,6 @@
 {
   "name": "escuchainterna",
-  "version": "0.7.1",
+  "version": "0.8.0",
   "private": true,
   "description": "EscuchaInterna — plataforma de gestión de consulta para psicólogos: agenda, pacientes, expedientes con historia clínica, diagnóstico CIE-11, pagos, marketing y biblioteca.",
   "scripts": {

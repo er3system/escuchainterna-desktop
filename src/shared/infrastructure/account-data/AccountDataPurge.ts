@@ -16,6 +16,7 @@ const CLINICAL_TABLES = [
   'diagnoses',
   'patient_reports',
   'patient_files',
+  'received_consents',
   // Bitácora privada (v29) y cuestionarios aplicados (v33): también son dato clínico
   // del paciente bajo retención. Sin esto, tras un offboarding institucional quedaban
   // con el dueño saliente y el sweep los borraba en silencio (la salvaguarda no los veía).
@@ -55,7 +56,7 @@ export async function countClinicalData(userId: string): Promise<ClinicalDataCou
     notes: get('session_notes'),
     diagnoses: get('diagnoses'),
     reports: get('patient_reports'),
-    files: get('patient_files'),
+    files: get('patient_files') + get('received_consents'),
     privateNotes: get('patient_notes'),
     assessments: get('patient_assessments'),
     total,

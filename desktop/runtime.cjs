@@ -20,7 +20,7 @@ function databaseFingerprint(resources, databasePath) {
   return value;
 }
 
-function runtimeEnvironment({ parent = process.env, resources, workspace, port, secrets }) {
+function runtimeEnvironment({ parent = process.env, resources, workspace, port, secrets, receptionDeviceId }) {
   // Catálogos privados se instalan aparte; no forman parte del respaldo clínico.
   const catalogs = path.join(path.dirname(workspace), 'catalogos');
   const localManifest = path.join(catalogs, 'data', 'publicaciones', 'manifest.json');
@@ -40,6 +40,7 @@ function runtimeEnvironment({ parent = process.env, resources, workspace, port, 
     PUBLICACIONES_ROOT_PATH: fs.existsSync(localManifest) ? catalogs : path.join(resources, 'server'),
     BIBLIOTECA_PATH: fs.existsSync(path.join(catalogs, 'biblioteca')) ? path.join(catalogs, 'biblioteca') : path.join(workspace, 'biblioteca'),
     SESSION_SECRET: secrets.SESSION_SECRET, DATA_ENCRYPTION_KEY: secrets.DATA_ENCRYPTION_KEY,
+    CONSENT_RECEPTION_DEVICE_ID: receptionDeviceId ?? '',
   });
 }
 

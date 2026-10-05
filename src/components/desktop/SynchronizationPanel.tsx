@@ -13,6 +13,7 @@ interface SynchronizationStatus {
   revisions: { id: string; createdAt: string; thisDevice: boolean }[];
 }
 interface DesktopSynchronizationBridge {
+  chooseConsentFolder?: (owner: string) => Promise<string | null>;
   driveStatus?: () => Promise<{ folders: string[] }>;
   synchronizationStatus: () => Promise<SynchronizationStatus>;
   connectSynchronization: () => Promise<SynchronizationStatus>;

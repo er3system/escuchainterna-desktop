@@ -8,6 +8,8 @@ const { isLocalUrl, isAllowedRendererRequest, externalWebsite, isSynchronization
 const { loadSecrets, encodeBackup, decodeBackup, restoreBackup, rollbackRestoration, writeAtomicFile } = require('./storage.cjs');
 const { FolderSynchronization, workspaceFingerprint } = require('./synchronization.cjs');
 const { driveFolders } = require('./drive.cjs');
+const { randomUUID } = require('node:crypto');
+const { isConsentFolderSender, signConsentFolderSelection } = require('./consent-folder.cjs');
 
 const smoke = process.argv.includes('--desktop-smoke');
 const smokeArgument = process.argv.find(value => value.startsWith('--desktop-smoke-dir='));
@@ -18,7 +20,7 @@ if (smoke) {
   app.setPath('userData', directory);
 }
 app.enableSandbox();
-let window, server, workspace, resources, secrets, synchronization;
+let window, server, workspace, resources, secrets, synchronization, receptionDeviceId;
 let quitting = false, busy = false;
 const lock = app.requestSingleInstanceLock();
 if (!lock) app.quit();
@@ -61,7 +63,7 @@ function passwordDialog(restoring, synchronizing = false) {
 
 async function restart() {
   secrets = loadSecrets(workspace, safeStorage);
-  server = await startServer({ resources, workspace, secrets });
+  server = await startServer({ resources, workspace, secrets, receptionDeviceId });
   await window.loadURL(`${server.origin}/`);
 }
 
@@ -159,6 +161,17 @@ async function synchronize(receiving, id) {
 }
 
 function configureSynchronizationIPC() {
+  ipcMain.handle('desktop:consent-folder', async (event, owner) => {
+    if (!isConsentFolderSender(event, window.webContents, server.origin)) throw new Error('Selecciona la carpeta desde Consentimientos.');
+    if (busy) throw new Error('Hay otra operación de datos en curso.');
+    busy = true;
+    try {
+      const roots = driveFolders();
+      const selection = await dialog.showOpenDialog(window, { title: 'Carpeta privada de recepción de consentimientos · distinta de los respaldos', ...(roots.length === 1 ? { defaultPath: roots[0] } : {}), properties: ['openDirectory', 'createDirectory', 'dontAddToRecent'] });
+      if (selection.canceled || !selection.filePaths[0]) return null;
+      return signConsentFolderSelection(selection.filePaths[0], owner, secrets.SESSION_SECRET, receptionDeviceId);
+    } finally { busy = false; }
+  });
   const operations = {
     'desktop:drive-status': () => ({ folders: driveFolders() }),
     'desktop:sync-status': () => synchronization.status(),
@@ -299,7 +312,10 @@ if (lock) app.whenReady().then(async () => {
   workspace = path.join(app.getPath('userData'), 'workspace');
   secrets = loadSecrets(workspace, safeStorage);
   synchronization = new FolderSynchronization({ configFile: path.join(app.getPath('userData'), 'synchronization.bin'), workspace, safeStorage });
-  server = await startServer({ resources, workspace, secrets });
+  const receptionDeviceFile = path.join(app.getPath('userData'), 'consent-reception-device-id');
+  if (!fs.existsSync(receptionDeviceFile)) writeAtomicFile(receptionDeviceFile, Buffer.from(randomUUID()));
+  receptionDeviceId = fs.readFileSync(receptionDeviceFile, 'utf8');
+  server = await startServer({ resources, workspace, secrets, receptionDeviceId });
   window = new BrowserWindow({ width: 1440, height: 940, minWidth: 1000, minHeight: 700, title: 'EscuchaInterna', backgroundColor: '#f8faf9', show: false,
     webPreferences: { preload: path.join(__dirname, 'preload.cjs'), sandbox: true, nodeIntegration: false, contextIsolation: true, webviewTag: false, webSecurity: true, allowRunningInsecureContent: false, backgroundThrottling: !smoke } });
   window.on('close', event => { if (busy) event.preventDefault(); });

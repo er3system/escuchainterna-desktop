@@ -1,4 +1,7 @@
 import { AggregateRoot } from '@/shared/domain/AggregateRoot';
+import type { ConsentReceptionId } from './value-objects/ConsentReceptionId';
+import type { ConsentSignatureDate } from './value-objects/ConsentSignatureDate';
+import type { ReceivedConsent } from './ReceivedConsent';
 import { ConsentAlreadySignedError } from './errors/ConsentAlreadySignedError';
 import { ConsentLinkRevokedError } from './errors/ConsentLinkRevokedError';
 import { InvalidConsentSignatureError } from './errors/InvalidConsentSignatureError';
@@ -106,6 +109,14 @@ export class PatientConsent extends AggregateRoot {
 
   public consentId(): string {
     return this.id;
+  }
+
+  /** Conserva el documento recibido como fuente; nunca atribuye el texto de otra plantilla ni autorización de IA. */
+  public static recordReviewedDocument(id: ConsentReceptionId, patientId: ConsentReceptionId, token: string, receipt: ReceivedConsent, signedDate: ConsentSignatureDate): PatientConsent {
+    receipt.assertPending();
+    const document = receipt.documentForReview();
+    const now = new Date();
+    return new PatientConsent(id.toString(), patientId.toString(), token, 'Consentimiento recibido y revisado', 'El consentimiento está en el documento adjunto. Esta ficha conserva la copia original recibida; no sustituye ni reproduce su contenido.', 'papel_adjunto', null, signedDate.toDate(), '', 'papel', document.location(), now, null, false);
   }
 
   public belongsTo(patientId: string): boolean {

@@ -24,6 +24,7 @@ import {
   Palette,
   Cloud,
   Plug,
+  FileCheck2,
   ChevronDown,
   type LucideIcon,
 } from 'lucide-react';
@@ -65,7 +66,7 @@ const SUPERVISION_ITEM: NavItem = { href: '/supervision', label: 'Supervisión',
 const HELP_ITEM: NavItem = { href: '/ayuda', label: 'Ayuda', icon: GraduationCap };
 
 function navigationGroup(href: string): string {
-  if (['/inicio', '/agenda', '/pacientes', '/pagos', '/recepcion'].includes(href)) return 'Consulta';
+  if (['/inicio', '/agenda', '/pacientes', '/consentimientos', '/pagos', '/recepcion'].includes(href)) return 'Consulta';
   if (['/mensajes', '/marketing'].includes(href)) return 'Comunicación';
   if (['/asistente', '/biblioteca'].includes(href)) return 'Recursos';
   if (href.startsWith('/organizacion') || ['/supervision', '/admin'].includes(href)) return 'Equipo';
@@ -149,6 +150,7 @@ export function Sidebar({
   const pathname = usePathname();
   const items = itemsFor(role, paymentsDisabled, isSupervisor);
   if (desktopEdition) {
+    if (!['assistant', 'reception', 'professor'].includes(role)) items.splice(items.findIndex(item => item.href === '/pacientes') + 1, 0, { href: '/consentimientos', label: 'Consentimientos', icon: FileCheck2 });
     const settingsIndex = items.findIndex(item => item.href === '/configuracion');
     items.splice(settingsIndex + 1, 0, { href: '/configuracion/sincronizacion', label: 'Sincronización', icon: Cloud });
     if (!['assistant', 'reception', 'professor'].includes(role)) items.splice(settingsIndex + 2, 0, { href: '/configuracion/integraciones', label: 'Servicios opcionales', icon: Plug });

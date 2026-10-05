@@ -97,6 +97,9 @@ const next = spawnSync(process.execPath, [path.join(source, 'node_modules', 'nex
 if (next.status !== 0) process.exit(next.status ?? 1);
 }
 const standalone = path.join(source, '.next-desktop', 'standalone');
+// Las guías descargables son estáticas y también deben entrar al reutilizar
+// una compilación existente. Nunca se copia el catálogo privado de public.
+copyAllowed('public/google-consent-reception.gs.txt');
 if (!fs.existsSync(path.join(standalone, 'server.js'))) throw new Error('Next no produjo un servidor standalone en la raíz del snapshot.');
 const server = path.join(resources, 'server');
 if (!licensesOnly) {

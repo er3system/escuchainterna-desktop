@@ -53,6 +53,9 @@ export const ENCRYPTED_CLINICAL_COLUMNS: EncryptedColumn[] = [
   { table: 'patient_reports', column: 'content' },
   { table: 'patient_consents', column: 'template_body' },
   { table: 'patient_consents', column: 'signed_name' },
+  { table: 'received_consents', column: 'document_json' },
+  { table: 'consent_reception_settings', column: 'folder' },
+  { table: 'consent_reception_settings', column: 'form_template' },
   // Cifradas por sus repos al escribir, pero faltaban en la lista: sin esto, el pase
   // de arranque no saneaba residuos en claro y la exportación de habeas data las
   // volcaba como texto cifrado (no se descifraban). patient_assessments.answers_json

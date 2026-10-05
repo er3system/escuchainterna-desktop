@@ -12,6 +12,7 @@ import { getDatabaseAdapter } from '@/shared/infrastructure/persistence/SqliteAd
 import { isDesktopEdition } from '@/shared/infrastructure/config/desktopEdition';
 import { DesktopStatusBanner } from '@/components/DesktopStatusBanner';
 import { WorkspaceTransition } from '@/components/appearance/WorkspaceTransition';
+import { ConsentInboxAutoReceiver } from '@/components/consent-reception/ConsentInboxAutoReceiver';
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const desktopEdition = isDesktopEdition();
@@ -69,6 +70,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       />
       <main id="workspace-content" tabIndex={-1} className="ei-workspace min-h-screen px-4 pb-6 pt-[4.5rem] md:ml-60 md:px-8 md:pt-6">
         <ImpersonationBanner />
+        {desktopEdition && !context.isAssistant && context.role !== 'professor' ? <ConsentInboxAutoReceiver /> : null}
         {desktopEdition ? <DesktopStatusBanner homeHref={context.isReception ? '/recepcion' : context.isAssistant ? '/agenda' : context.role === 'professor' ? '/supervision' : '/inicio'} /> : emailUnverified ? <EmailVerificationBanner /> : null}
         <WorkspaceTransition>{children}</WorkspaceTransition>
       </main>

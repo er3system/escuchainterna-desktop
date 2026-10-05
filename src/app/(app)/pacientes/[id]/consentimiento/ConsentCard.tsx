@@ -13,6 +13,7 @@ import {
 import { imageToWebp } from '@/components/imageToWebp';
 import { Badge, Card } from '@/components/ui';
 import { attachPaperConsentAction, revokeConsentAction, sendConsentAction } from './actions';
+import { ConsentReceptionRequest } from '@/components/consent-reception/ConsentReceptionRequest';
 
 export interface ConsentCardData {
   /** null = nunca se ha emitido un consentimiento para este paciente. */
@@ -37,7 +38,7 @@ const actionButton =
 const quietButton =
   'inline-flex items-center gap-1.5 rounded-lg border border-line px-2.5 py-1.5 text-xs font-medium text-ink-soft transition hover:text-ink disabled:opacity-50';
 
-export function ConsentCard({ patientId, consent }: { patientId: string; consent: ConsentCardData }) {
+export function ConsentCard({ patientId, consent, desktop = false }: { patientId: string; consent: ConsentCardData; desktop?: boolean }) {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
@@ -116,35 +117,35 @@ export function ConsentCard({ patientId, consent }: { patientId: string; consent
           <FileSignature size={14} /> Consentimiento
         </h3>
         {consent.status === null ? (
-          <Badge tone="warning">Sin enviar</Badge>
+          <Badge tone="warning">{desktop ? 'Sin documento' : 'Sin enviar'}</Badge>
         ) : (
           <Badge tone={granted ? 'success' : consent.status === 'pendiente' ? 'warning' : 'neutral'}>
-            {CONSENT_STATUS_LABELS[consent.status]}
+            {desktop && consent.status === 'papel_adjunto' ? 'Documento firmado' : CONSENT_STATUS_LABELS[consent.status]}
           </Badge>
         )}
       </div>
 
       <p className="text-sm text-ink-soft">
         {consent.status === null
-          ? 'Este paciente aún no tiene consentimiento informado. Envíale la liga de firma o adjunta la copia firmada en papel.'
+          ? desktop ? 'Este paciente aún no tiene consentimiento informado. Adjunta la copia firmada o prepara su recepción con Drive.' : 'Este paciente aún no tiene consentimiento informado. Envíale la liga de firma o adjunta la copia firmada en papel.'
           : consent.status === 'pendiente'
-            ? `Liga enviada${consent.sentAt ? ` el ${formatDate(consent.sentAt)}` : ''}; esperando la firma del paciente.`
+            ? desktop ? 'Pendiente de recibir la copia firmada. Puedes adjuntarla o preparar su recepción con Drive.' : `Liga enviada${consent.sentAt ? ` el ${formatDate(consent.sentAt)}` : ''}; esperando la firma del paciente.`
             : consent.status === 'firmado'
               ? `Firmado digitalmente por ${consent.signedName}${consent.signedAt ? ` el ${formatDate(consent.signedAt)}` : ''}.`
               : consent.status === 'papel_adjunto'
-                ? `Copia firmada en papel adjuntada${consent.signedAt ? ` el ${formatDate(consent.signedAt)}` : ''}.`
+                ? `Documento firmado adjunto${consent.signedAt ? ` · Fecha registrada: ${formatDate(consent.signedAt)}` : ''}.`
                 : 'El consentimiento fue revocado. Envía uno nuevo cuando lo necesites.'}
       </p>
 
       <div className="mt-3 flex flex-wrap gap-1.5">
-        {!granted ? (
+        {!granted && !desktop ? (
           <button type="button" onClick={runSend} disabled={pending} className={actionButton}>
             <Send size={13} />
             {pendienteFirma ? 'Reenviar liga' : 'Enviar al paciente'}
           </button>
         ) : null}
 
-        {pendienteFirma && consent.signUrl ? (
+        {pendienteFirma && consent.signUrl && !desktop ? (
           <button type="button" onClick={copyLink} disabled={pending} className={quietButton}>
             {copied ? <Check size={13} /> : <Copy size={13} />}
             {copied ? 'Copiada' : 'Copiar liga'}
@@ -192,6 +193,7 @@ export function ConsentCard({ patientId, consent }: { patientId: string; consent
           </button>
         ) : null}
       </div>
+      {desktop ? <ConsentReceptionRequest patientId={patientId} /> : null}
 
       {pending ? <p className="mt-2 text-xs text-ink-soft">Procesando…</p> : null}
       {error ? <p className="mt-2 text-sm text-danger">{error}</p> : null}

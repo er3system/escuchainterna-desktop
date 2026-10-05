@@ -1516,6 +1516,15 @@ const MIGRATIONS: Migration[] = [
       // La columna se mantiene por compatibilidad de esquema, pero desde v60 queda ignorada.
     ],
   },
+  {
+    version: 61,
+    statements: [
+      `CREATE TABLE consent_reception_settings (id TEXT PRIMARY KEY NOT NULL, owner_user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE, device_id TEXT NOT NULL, folder TEXT NOT NULL, form_template TEXT NOT NULL DEFAULT '', UNIQUE(owner_user_id, device_id))`,
+      `CREATE TABLE consent_reception_codes (code TEXT PRIMARY KEY, owner_user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE, patient_id TEXT NOT NULL REFERENCES patients(id) ON DELETE CASCADE, created_at TEXT NOT NULL, UNIQUE(owner_user_id, patient_id))`,
+      `CREATE TABLE received_consents (id TEXT PRIMARY KEY, owner_user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE, content_hash TEXT NOT NULL, document_json TEXT NOT NULL, received_at TEXT NOT NULL, status TEXT NOT NULL CHECK(status IN ('pendiente','archivado','descartado')), suggested_patient_id TEXT REFERENCES patients(id) ON DELETE SET NULL, patient_id TEXT REFERENCES patients(id) ON DELETE SET NULL, consent_id TEXT REFERENCES patient_consents(id) ON DELETE SET NULL, signed_date TEXT, reviewed_at TEXT, UNIQUE(owner_user_id, content_hash))`,
+      `CREATE INDEX idx_received_consents_owner_status ON received_consents(owner_user_id, status, received_at)`,
+    ],
+  },
 ];
 
 export function runMigrations(db: DatabaseSync): void {

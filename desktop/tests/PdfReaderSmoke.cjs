@@ -24,7 +24,7 @@ app.whenReady().then(async () => {
     response.setHeader('Content-Security-Policy', "default-src 'self'; style-src 'self' 'unsafe-inline'; frame-ancestors 'self'; object-src 'none'");
     response.setHeader('X-Frame-Options', 'SAMEORIGIN');
     response.setHeader('X-Content-Type-Options', 'nosniff');
-    if (request.url === '/document.pdf') { response.setHeader('Content-Type', 'application/pdf'); response.end(pdf); }
+    if (request.url === '/document.pdf') { response.setHeader('Content-Security-Policy', "sandbox; default-src 'none'"); response.setHeader('Content-Type', 'application/pdf'); response.end(pdf); }
     else { response.setHeader('Content-Type', 'text/html'); response.end('<style>body{margin:0}iframe{width:100vw;height:100vh;border:0}</style><iframe title="PDF ficticio" src="/document.pdf"></iframe>'); }
   });
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
