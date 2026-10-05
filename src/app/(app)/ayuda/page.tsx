@@ -6,6 +6,7 @@ import { tutorialsForEdition } from './tutorials';
 import { readCompletedTutorials } from './helpProgress';
 import { isDesktopEdition } from '@/shared/infrastructure/config/desktopEdition';
 import { DesktopQuickGuide } from '@/components/desktop/DesktopQuickGuide';
+import { SupportProject } from '@/components/project/SupportProject';
 
 export const metadata = { title: 'Ayuda · EscuchaInterna' };
 
@@ -24,7 +25,7 @@ export default async function AyudaPage() {
         subtitle={desktopEdition ? 'Respaldo, sincronización, lecturas y atajos para tu consulta local.' : 'Tutoriales cortos e interactivos para sacarle todo el provecho a EscuchaInterna. Avanza a tu ritmo.'}
       />
 
-      {desktopEdition ? <><DesktopQuickGuide /><h2 className="mb-4 font-display text-xl font-bold">Tutoriales de consulta</h2></> : null}
+      {desktopEdition ? <><DesktopQuickGuide /><SupportProject /><h2 className="mb-4 font-display text-xl font-bold">Tutoriales de consulta</h2></> : null}
 
       {/* Progreso general */}
       <div className="mb-6 rounded-card border border-line bg-surface p-5 shadow-card">

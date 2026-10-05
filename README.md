@@ -4,6 +4,14 @@ Programa de escritorio en español para gestionar una consulta psicológica: age
 
 **Windows de 64 bits · Código abierto MIT · Temas y sincronización cifrada con Drive**
 
+[Descargar para Windows](https://github.com/er3system/escuchainterna-desktop/releases) · [Ver el proyecto](https://escuchainterna.com) · [Apoyar a Laroc en Ko-fi](https://ko-fi.com/laroc)
+
+![Inicio de EscuchaInterna para PC en una instalación de prueba](public/showcase/programa.webp)
+
+## Apoya el proyecto
+
+EscuchaInterna para PC es gratuito y su código se publica con licencia MIT. Si te resulta útil, puedes [invitar a Laroc a un café en Ko-fi](https://ko-fi.com/laroc) y ayudar a sostener su desarrollo. El apoyo es voluntario: no desbloquea funciones ni sustituye una suscripción. También puedes reportar errores, proponer mejoras, revisar documentación o contribuir código en GitHub.
+
 ## Instalar
 
 Descarga el instalador `.exe` desde [Releases](https://github.com/er3system/escuchainterna-desktop/releases). El programa incluye los componentes necesarios; no necesitas instalar Node.js ni configurar una base de datos.
@@ -20,7 +28,7 @@ Desde 0.7.0, **Google Calendar** tiene una pantalla propia accesible desde Agend
 
 Los proveedores requieren internet y facturan directamente a tu cuenta. Sin clave, la consulta conserva el modo local; los correos sin proveedor quedan como registros sin enviar. Resend requiere un remitente de un dominio verificado. OpenAI usa Responses con `store: false`; su integración cubre el chat, mientras las herramientas de notas e informes siguen locales salvo que conectes Anthropic. Una suscripción de ChatGPT no incluye el uso de su API.
 
-Los correos pendientes se reintentan desde **Mensajes**, acotados al dueño autenticado. Las automatizaciones se revisan al abrir Marketing, no con el programa cerrado. WhatsApp Business, Calendar/Meet y pagos automáticos muestran requisitos y guías; sus adaptadores no están implementados en PC y no se simulan conexiones. Los enlaces de esta PC no son una web pública.
+Los correos pendientes se reintentan desde **Mensajes**, acotados al dueño autenticado. Las automatizaciones se revisan al abrir Marketing, no con el programa cerrado. WhatsApp Business, Meet y pagos automáticos muestran requisitos y guías; sus adaptadores no están implementados en PC y no se simulan conexiones. Los enlaces de esta PC no son una web pública.
 
 El respaldo inicial admite hasta 256 MiB de datos antes de comprimir. Conserva su contraseña: será necesaria para restaurar. Para imprimir o guardar una vista como PDF, usa el menú del programa y el diálogo de Windows.
 

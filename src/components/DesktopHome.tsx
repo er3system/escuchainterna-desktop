@@ -3,6 +3,7 @@ import { ArrowRight, CalendarDays, FileText, HardDrive, LockKeyhole, Palette } f
 import { LogoMark } from '@/components/Logo';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { AppearanceSettings } from '@/components/appearance/AppearanceSettings';
+import { PROJECT_LINKS } from '@/components/project/projectLinks';
 
 const FEATURES = [
   { icon: CalendarDays, title: 'Todo en su lugar', text: 'Agenda, pacientes y pagos, con espacio para concentrarte.' },
@@ -40,6 +41,7 @@ export function DesktopHome({ authenticated }: { authenticated: boolean }) {
         </div>
         <footer className="mt-10 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-line py-5 text-xs text-ink-soft">
           <span>EscuchaInterna · Licencia MIT</span><Link href="/legal/terminos" className="hover:underline">Condiciones de uso</Link><Link href="/legal/privacidad" className="hover:underline">Privacidad local</Link>
+          <a href={PROJECT_LINKS.support} target="_blank" rel="noopener noreferrer" className="font-semibold text-accent-strong hover:underline">Apoyar en Ko-fi ↗</a>
           <span className="ml-auto inline-flex items-center gap-2"><Palette size={13} /> Hecho para tu forma de trabajar</span>
         </footer>
       </div>

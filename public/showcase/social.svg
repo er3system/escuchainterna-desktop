@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs><radialGradient id="glow"><stop stop-color="#d8e8b8"/><stop offset="1" stop-color="#f7f8f1"/></radialGradient></defs>
+  <rect width="1200" height="630" fill="#f7f8f1"/><circle cx="940" cy="220" r="500" fill="url(#glow)"/>
+  <g fill="none" stroke="#427c58" stroke-width="6" stroke-linecap="round"><path d="M99 46a27 27 0 0 1 0 54"/><path d="M94 55a18 18 0 0 1 0 36" opacity=".7"/><path d="M89 64a9 9 0 0 1 0 18" opacity=".5"/></g><circle cx="80" cy="73" r="6" fill="#427c58"/>
+  <text x="135" y="85" font-family="Arial,sans-serif" font-weight="600" font-size="31" fill="#193c30">escuchainterna.</text>
+  <text x="72" y="177" font-family="Arial,sans-serif" font-size="14" font-weight="600" letter-spacing="3" fill="#526f48">SOFTWARE LIBRE · HECHO PARA PSICÓLOGOS</text>
+  <g font-family="Arial,sans-serif" font-weight="600" font-size="73" letter-spacing="-3"><text x="68" y="282" fill="#193c30">Tu consulta.</text><text x="68" y="366" fill="#193c30">Tu PC.</text><text x="68" y="450" fill="#54844c">Tu tranquilidad.</text></g>
+  <text x="72" y="535" font-family="Arial,sans-serif" font-size="20" fill="#52685d">Windows · Sin conexión · Gratis · Licencia MIT</text>
+  <g transform="translate(775 173) rotate(-5)"><rect width="325" height="272" rx="19" fill="#fff" stroke="#ccd9bf"/><rect width="325" height="29" rx="19" fill="#e8efdd"/><circle cx="18" cy="14" r="3" fill="#8da380"/><circle cx="29" cy="14" r="3" fill="#8da380"/><circle cx="40" cy="14" r="3" fill="#8da380"/>
+    <rect x="17" y="48" width="290" height="62" rx="9" fill="#e5edd7"/><text x="31" y="75" font-family="Arial,sans-serif" font-size="14" fill="#31553c" font-weight="600">Tu consulta, en tu equipo.</text><text x="31" y="95" font-family="Arial,sans-serif" font-size="10" fill="#5d7554">Más espacio para escuchar.</text>
+    <g fill="#f1f4ec" stroke="#dbe4d1"><rect x="17" y="123" width="90" height="32" rx="6"/><rect x="117" y="123" width="90" height="32" rx="6"/><rect x="217" y="123" width="90" height="32" rx="6"/><rect x="17" y="169" width="290" height="82" rx="9"/></g>
+    <g fill="#647c58" font-family="Arial,sans-serif" font-size="9"><text x="30" y="143">Pacientes</text><text x="138" y="143">Agenda</text><text x="235" y="143">Biblioteca</text><text x="31" y="191">Tu agenda de hoy</text></g><g fill="#c6d9ae"><rect x="31" y="207" width="21" height="21" rx="5"/><rect x="64" y="207" width="100" height="6" rx="3"/><rect x="64" y="222" width="153" height="4" rx="2"/></g>
+  </g><text x="775" y="534" font-family="Arial,sans-serif" font-size="20" fill="#375b40">escuchainterna.com</text>
+</svg>

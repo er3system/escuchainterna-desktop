@@ -246,6 +246,8 @@ function configureMenu() {
     { label: 'Vista', submenu: [{ role: 'reload', label: 'Recargar' }, { role: 'resetZoom', label: 'Tamaño original' }, { role: 'zoomIn', label: 'Acercar' }, { role: 'zoomOut', label: 'Alejar' }, { role: 'togglefullscreen', label: 'Pantalla completa' }] },
     { label: 'Ayuda', submenu: [
       { label: 'Guía de uso en PC', accelerator: 'F1', click: () => { if (!busy) void window.loadURL(`${server.origin}/ayuda`); } },
+      { label: 'Apoyar a Laroc en Ko-fi', click: () => openWebsite('https://ko-fi.com/laroc') },
+      { label: 'Código y contribuciones en GitHub', click: () => openWebsite('https://github.com/er3system/escuchainterna-desktop') },
       { type: 'separator' },
       { label: 'Acerca de EscuchaInterna', click: () => dialog.showMessageBox(window, { type: 'info', title: 'EscuchaInterna', message: `EscuchaInterna ${app.getVersion()}`, detail: `Aplicación local de código abierto. Los datos de la consulta se guardan en esta PC.\n\nCarpeta de datos: ${workspace}` }) },
     ] },

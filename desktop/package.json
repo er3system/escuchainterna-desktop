@@ -1,6 +1,6 @@
 {
   "name": "escuchainterna-desktop",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "EscuchaInterna: consulta psicológica local en tu PC",
   "main": "main.cjs",
   "author": "EscuchaInterna contributors",
