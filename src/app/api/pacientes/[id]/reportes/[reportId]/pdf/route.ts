@@ -41,7 +41,7 @@ export async function GET(
     return new Response('Reporte no encontrado.', { status: 404 });
   }
   if (isDesktopEdition()) {
-    return new Response('En la edición de PC, abre el reporte y elige «Imprimir / guardar PDF» o usa el menú de la aplicación. No se incluye un motor de impresión de servidor.', { status: 409, headers: { 'Cache-Control': 'no-store' } });
+    return new Response('En la edición de PC, abre el reporte y pulsa «Guardar PDF» o usa Archivo → Guardar PDF. El archivo se genera en esta PC.', { status: 409, headers: { 'Cache-Control': 'no-store' } });
   }
   // Custodia institucional (§3.3): descargar el expediente de un paciente retenido es
   // un acceso de ruptura de cristal y debe quedar trazado (no pasa por el layout).

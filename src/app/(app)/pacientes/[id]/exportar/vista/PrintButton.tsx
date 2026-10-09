@@ -1,12 +1,7 @@
 'use client';
 
-import { Printer } from 'lucide-react';
-import { Button } from '@/components/ui';
+import { DocumentPrintActions } from '@/components/desktop/DocumentPrintActions';
 
-export function PrintButton() {
-  return (
-    <Button type="button" onClick={() => window.print()}>
-      <Printer size={15} /> Imprimir
-    </Button>
-  );
+export function PrintButton({ patientName }: { patientName: string }) {
+  return <DocumentPrintActions fileName={`Expediente-${patientName}`} />;
 }

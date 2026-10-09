@@ -1,6 +1,6 @@
 {
   "name": "escuchainterna",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "private": true,
   "description": "EscuchaInterna — plataforma de gestión de consulta para psicólogos: agenda, pacientes, expedientes con historia clínica, diagnóstico CIE-11, pagos, marketing y biblioteca.",
   "scripts": {
@@ -24,6 +24,7 @@
     "desktop:dir": "electron-builder --config desktop/electron-builder.cjs --win --x64 --dir",
     "desktop:smoke": "node scripts/desktop-smoke.mjs",
     "desktop:pdf-smoke": "node scripts/desktop-pdf-smoke.mjs",
+    "desktop:export-smoke": "node scripts/desktop-export-smoke.mjs",
     "desktop:test": "node --test desktop/tests/*.test.cjs",
     "desktop:start": "electron desktop",
     "desktop:e2e": "node scripts/desktop-e2e.mjs"

@@ -3,7 +3,8 @@
 import { useState, useTransition } from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Printer, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
+import { DocumentPrintActions } from '@/components/desktop/DocumentPrintActions';
 import { Badge } from '@/components/ui';
 import { generateCaseSummaryAction } from '../../../actions';
 
@@ -91,13 +92,7 @@ export function CaseSummaryPanel({
       {error ? <p className="mt-3 text-sm text-danger">{error}</p> : null}
 
       <div className="mt-4 flex flex-wrap items-center gap-2">
-        <button
-          type="button"
-          onClick={() => window.print()}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-line px-3 py-1.5 text-sm font-medium text-ink hover:bg-bg"
-        >
-          <Printer size={14} /> Imprimir
-        </button>
+        <DocumentPrintActions fileName={`Resumen-del-caso-${patientName}`} />
         <button
           type="button"
           onClick={generate}

@@ -1,6 +1,8 @@
 # Guía para agentes de IA y colaboradores
 
-Esta guía describe EscuchaInterna para PC 0.8.1 y el showcase público. Está pensada para continuar el desarrollo, instalar una copia de prueba y ayudar a configurar Google con el usuario. El código actual y sus pruebas tienen prioridad sobre este documento.
+Esta guía describe EscuchaInterna para PC 0.8.2 y el showcase público. Está pensada para continuar el desarrollo, instalar una copia de prueba y ayudar a configurar Google con el usuario. El código actual y sus pruebas tienen prioridad sobre este documento.
+
+Para guardar PDF sin impresora virtual, consulta [la exportación nativa](desktop-pdf-export.md). Conserva separadas las acciones de guardar e imprimir; verifica con `npm run desktop:export-smoke` en un perfil aislado.
 
 Para cuentas recordadas y recuperación local, consulta [el contrato de acceso](desktop-account-access.md). La recuperación se inicia desde el proceso nativo y el usuario escribe su contraseña en el programa; no pidas ni publiques claves, hashes o enlaces de recuperación. Usa `node scripts/desktop-account-smoke.mjs` con datos ficticios para verificar cambios en ese flujo.
 

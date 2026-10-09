@@ -1,7 +1,8 @@
 'use client';
 
 import { useMemo, useRef, useState, useTransition } from 'react';
-import { Check, Link2, Plus, Printer, Save, Trash2, Triangle, UserPlus, X } from 'lucide-react';
+import { Check, Link2, Plus, Save, Trash2, Triangle, UserPlus, X } from 'lucide-react';
+import { DocumentPrintActions } from '@/components/desktop/DocumentPrintActions';
 import {
   FAMILY_CONDITION_LABELS,
   FAMILY_CONDITIONS,
@@ -538,13 +539,7 @@ export function GenogramEditor({
             {status === 'dirty' ? 'Cambios sin guardar' : null}
             {status === 'error' ? <span className="text-danger">{errorMessage}</span> : null}
           </span>
-          <button
-            type="button"
-            onClick={() => window.print()}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-line px-3 py-2 text-sm font-medium text-ink hover:bg-bg"
-          >
-            <Printer size={15} /> Imprimir
-          </button>
+          <DocumentPrintActions fileName={`Mapa-familiar-${title}`} />
           <Button
             type="button"
             onClick={save}

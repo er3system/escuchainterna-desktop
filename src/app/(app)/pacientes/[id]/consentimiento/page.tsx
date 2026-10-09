@@ -90,7 +90,7 @@ export default async function ConsentimientoDetallePage({
           ) : (
             <Badge tone="warning">Sin enviar</Badge>
           )}
-          <PrintButton />
+          <PrintButton patientName={patient.fullName} />
         </div>
       </div>
 
@@ -106,7 +106,7 @@ export default async function ConsentimientoDetallePage({
           {resolvedBody}
         </div>
 
-        <div className="mt-10 border-t border-line pt-6">
+        <div className="mt-10 break-inside-avoid border-t border-line pt-6">
           {consent && consent.status === 'firmado' ? (
             <div className="flex items-start gap-2">
               <CheckCircle2 size={18} className="mt-0.5 shrink-0 text-success" />

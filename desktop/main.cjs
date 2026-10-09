@@ -11,8 +11,10 @@ const { driveFolders } = require('./drive.cjs');
 const { randomUUID } = require('node:crypto');
 const { isConsentFolderSender, signConsentFolderSelection } = require('./consent-folder.cjs');
 const { isAccountRecoverySender, requestAccountRecovery } = require('./account-recovery.cjs');
+const { isPdfExportSender, savePagePdf } = require('./pdf-export.cjs');
 
-const smoke = process.argv.includes('--desktop-smoke');
+const exportSmoke = process.argv.includes('--desktop-export-smoke');
+const smoke = process.argv.includes('--desktop-smoke') || exportSmoke;
 const smokeArgument = process.argv.find(value => value.startsWith('--desktop-smoke-dir='));
 if (smoke) {
   if (!smokeArgument) throw new Error('La verificación necesita una carpeta temporal vacía.');
@@ -254,7 +256,11 @@ function configureMenu() {
       { label: 'Crear respaldo cifrado…', click: () => backup(false) },
       { label: 'Restaurar respaldo…', click: () => backup(true) },
       { type: 'separator' },
-      { label: 'Imprimir / guardar PDF…', accelerator: 'Ctrl+P', click: () => window.webContents.print({ silent: false, printBackground: true }) },
+      { label: 'Guardar PDF…', accelerator: 'Ctrl+Shift+S', click: async () => {
+        try { await exportPdf(); }
+        catch (error) { await dialog.showMessageBox(window, { type: 'error', title: 'Guardar PDF', message: error.message || 'No se pudo guardar el PDF. Inténtalo de nuevo.' }); }
+      } },
+      { label: 'Imprimir…', accelerator: 'Ctrl+P', click: () => { if (!busy) window.webContents.print({ silent: false, printBackground: true }); } },
       { type: 'separator' }, { label: 'Salir', role: 'quit' },
     ] },
     { label: 'Edición', submenu: [{ role: 'undo', label: 'Deshacer' }, { role: 'redo', label: 'Rehacer' }, { type: 'separator' }, { role: 'cut', label: 'Cortar' }, { role: 'copy', label: 'Copiar' }, { role: 'paste', label: 'Pegar' }, { role: 'selectAll', label: 'Seleccionar todo' }] },
@@ -267,6 +273,15 @@ function configureMenu() {
       { label: 'Acerca de EscuchaInterna', click: () => dialog.showMessageBox(window, { type: 'info', title: 'EscuchaInterna', message: `EscuchaInterna ${app.getVersion()}`, detail: `Aplicación local de código abierto. Los datos de la consulta se guardan en esta PC.\n\nCarpeta de datos: ${workspace}` }) },
     ] },
   ]));
+}
+
+async function exportPdf(suggestedName) {
+  if (busy) throw new Error('Hay otra operación en curso. Espera a que termine.');
+  busy = true;
+  try {
+    return await savePagePdf({ window, origin: server.origin, dialog,
+      defaultDirectory: app.getPath('documents'), suggestedName: suggestedName ?? `EscuchaInterna-${new Date().toISOString().slice(0, 10)}` });
+  } finally { busy = false; }
 }
 
 async function recoverLocalAccount(email) {
@@ -331,7 +346,7 @@ if (lock) app.whenReady().then(async () => {
   if (!fs.existsSync(receptionDeviceFile)) writeAtomicFile(receptionDeviceFile, Buffer.from(randomUUID()));
   receptionDeviceId = fs.readFileSync(receptionDeviceFile, 'utf8');
   server = await startServer({ resources, workspace, secrets, receptionDeviceId });
-  window = new BrowserWindow({ width: 1440, height: 940, minWidth: 1000, minHeight: 700, title: 'EscuchaInterna', backgroundColor: '#f8faf9', show: false,
+  window = new BrowserWindow({ width: 1440, height: 940, minWidth: 1000, minHeight: 700, title: 'EscuchaInterna', backgroundColor: '#ffffff', show: false,
     webPreferences: { preload: path.join(__dirname, 'preload.cjs'), sandbox: true, nodeIntegration: false, contextIsolation: true, webviewTag: false, webSecurity: true, allowRunningInsecureContent: false, backgroundThrottling: !smoke } });
   window.on('close', event => { if (busy) event.preventDefault(); });
   const session = window.webContents.session;
@@ -348,6 +363,11 @@ if (lock) app.whenReady().then(async () => {
   });
   configureMenu();
   configureSynchronizationIPC();
+  ipcMain.handle('desktop:save-pdf', async (event, suggestedName) => {
+    if (!isPdfExportSender(event, window.webContents, server.origin)) throw new Error('Guarda el PDF desde la ventana principal de EscuchaInterna.');
+    if (suggestedName !== undefined && (typeof suggestedName !== 'string' || suggestedName.length > 240)) throw new Error('Nombre de documento inválido.');
+    return exportPdf(suggestedName);
+  });
   ipcMain.handle('desktop:recover-account', async (event, email) => {
     if (!isAccountRecoverySender(event, window.webContents, server.origin)) throw new Error('La recuperación solo está disponible desde el inicio de sesión del programa.');
     await recoverLocalAccount(email);
@@ -356,7 +376,7 @@ if (lock) app.whenReady().then(async () => {
   await window.loadURL(`${server.origin}/`);
   const recoveryArgument = !smoke && process.argv.find(value => value.startsWith('--recover-local-account='));
   if (recoveryArgument) await recoverLocalAccount(recoveryArgument.slice('--recover-local-account='.length));
-  if (smoke) await smokeCheck();
+  if (smoke && !exportSmoke) await smokeCheck();
 }).catch(async error => {
   if (smoke) fs.writeFileSync(path.join(app.getPath('userData'), 'desktop-smoke.json'), JSON.stringify({ ok: false, error: error.message }));
   else dialog.showErrorBox('No se pudo iniciar EscuchaInterna', error.message);

@@ -4,7 +4,8 @@ import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Check, FileDown, FileSignature, Printer, Save, ShieldCheck } from 'lucide-react';
+import { Check, FileDown, FileSignature, Save, ShieldCheck } from 'lucide-react';
+import { DocumentPrintActions } from '@/components/desktop/DocumentPrintActions';
 import type { PatientReportPrimitives } from '@/contexts/clinical-records/domain/PatientReport';
 import {
   PATIENT_REPORT_KIND_LABELS,
@@ -132,14 +133,9 @@ export function ReportEditor({
             ) : null}
             {status === 'dirty' ? 'Cambios sin guardar' : null}
           </span>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => window.print()}
-            className="px-3"
-          >
-            <Printer size={15} /> {desktopEdition ? 'Imprimir / guardar PDF' : isSigned ? 'Imprimir' : 'Imprimir borrador'}
-          </Button>
+          <DocumentPrintActions fileName={`${isSigned ? 'Reporte' : 'Borrador'}-${patientName}-${title}`}
+            printLabel={isSigned ? 'Imprimir' : 'Imprimir borrador'}
+            pdfLabel={isSigned ? 'Guardar PDF' : 'Guardar PDF del borrador'} />
           {desktopEdition ? null : <a
             href={`/api/pacientes/${patientId}/reportes/${report.id}/pdf`}
             target="_blank"

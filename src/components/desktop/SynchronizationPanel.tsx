@@ -13,6 +13,7 @@ interface SynchronizationStatus {
   revisions: { id: string; createdAt: string; thisDevice: boolean }[];
 }
 interface DesktopSynchronizationBridge {
+  savePdf?: (name?: string) => Promise<{ canceled: boolean; fileName?: string }>;
   chooseConsentFolder?: (owner: string) => Promise<string | null>;
   driveStatus?: () => Promise<{ folders: string[] }>;
   synchronizationStatus: () => Promise<SynchronizationStatus>;

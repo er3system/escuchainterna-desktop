@@ -66,6 +66,8 @@ Se transfieren versiones cifradas del espacio completo, incluidas todas las cuen
 
 Los datos se guardan en la carpeta de usuario de Windows, fuera del programa. Las actualizaciones conservan ese espacio de trabajo. El instalador inicial no tiene firma Authenticode; en la release se publica su SHA-256.
 
+**Guardar PDF** exporta consentimientos, expedientes, reportes y mapas familiares directamente a la carpeta que elijas, sin impresora virtual. También está en Archivo → Guardar PDF (`Ctrl+Shift+S`); **Imprimir** (`Ctrl+P`) abre el selector de impresoras. Consulta [la guía de exportación](docs/desktop-pdf-export.md).
+
 ## Qué funciona en local
 
 Agenda, registro e importación de pacientes, expedientes clínicos, notas, archivos y registro de pagos usan SQLite y archivos en la PC. La autenticación, los permisos por profesional y el cifrado de campos se conservan. El modo escritorio no crea usuarios ni pacientes demo.

@@ -104,7 +104,7 @@ export default async function VistaImprimiblePage({
         >
           <ArrowLeft size={16} /> Cambiar secciones
         </Link>
-        <PrintButton />
+        <PrintButton patientName={patient.fullName} />
       </div>
 
       <div

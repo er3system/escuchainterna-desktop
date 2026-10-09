@@ -646,3 +646,20 @@ body {
 @media (prefers-reduced-motion: reduce) { .ei-route-enter, .ei-home::before { animation: none; } .ei-button:hover, .ei-nav-link:hover { transform: none; } }
 :root[data-motion='reduced'] .ei-button:hover, :root[data-motion='reduced'] .ei-nav-link:hover { transform: none; }
 @media print { .ei-sidebar, .ei-home::before { display: none; } .ei-workspace { margin-left: 0; background: white; } }
+/* Clinical documents stay legible on paper, regardless of the chosen theme. */
+@media print {
+  :root, :root[data-theme] {
+    color-scheme: light !important;
+    --color-bg: #fff !important;
+    --color-surface: #fff !important;
+    --color-ink: #172b23 !important;
+    --color-ink-soft: #42574d !important;
+    --color-line: #c9d4cd !important;
+    --color-primary: #226347 !important;
+    --color-primary-light: #ecf5ee !important;
+    --color-accent-2: #226347 !important;
+  }
+  html, body { background: white !important; }
+  .ei-route-enter { animation: none !important; transform: none !important; }
+  [id$='-imprimible'] { max-width: none !important; background: white !important; }
+}
