@@ -6,6 +6,7 @@ import { CheckCircle2 } from 'lucide-react';
 import { LogoMark } from '@/components/Logo';
 import { Button, Input } from '@/components/ui';
 import { resetPasswordAction, type ResetPasswordState } from '../actions';
+import { MIN_PASSWORD_LENGTH } from '@/contexts/identity/domain/value-objects/passwordPolicy';
 
 const INITIAL: ResetPasswordState = {};
 
@@ -44,20 +45,21 @@ export function ResetPasswordCard({ token }: { token: string }) {
             type="password"
             name="password"
             required
-            minLength={6}
+            minLength={MIN_PASSWORD_LENGTH}
             aria-label="Nueva contraseña"
-            placeholder="Nueva contraseña (mínimo 6 caracteres) *"
+            placeholder={`Nueva contraseña (mínimo ${MIN_PASSWORD_LENGTH} caracteres) *`}
             autoComplete="new-password"
           />
           <Input
             type="password"
             name="confirmacion"
             required
-            minLength={6}
+            minLength={MIN_PASSWORD_LENGTH}
             aria-label="Confirmar contraseña"
             placeholder="Confirma la nueva contraseña *"
             autoComplete="new-password"
           />
+          <p className="text-xs leading-relaxed text-ink-soft">Usa letras y números, o una frase de 14 caracteres o más.</p>
           {state.error ? <p className="text-sm text-danger">{state.error}</p> : null}
           <Button type="submit" size="lg" disabled={pending} className="w-full px-4">
             {pending ? 'Guardando…' : 'Guardar nueva contraseña'}

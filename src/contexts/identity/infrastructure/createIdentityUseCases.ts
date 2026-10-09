@@ -30,6 +30,7 @@ import { SqliteOrganizationMembershipRepository } from './persistence/SqliteOrga
 import { SqliteReferralRepository } from './persistence/SqliteReferralRepository';
 import { SqlitePlatformSettingsRepository } from './persistence/SqlitePlatformSettingsRepository';
 import { OutboxPasswordResetNotifier } from './notifications/OutboxPasswordResetNotifier';
+import { DesktopPasswordResetNotifier } from './notifications/DesktopPasswordResetNotifier';
 import { OutboxEmailVerificationNotifier } from './notifications/OutboxEmailVerificationNotifier';
 import { InAppReferralActivationNotifier } from './notifications/InAppReferralActivationNotifier';
 import { isDesktopEdition } from '@/shared/infrastructure/config/desktopEdition';
@@ -55,6 +56,7 @@ export function createIdentityUseCases() {
     ),
     loginUser: new LoginUser(accounts, hasher),
     requestPasswordReset: new RequestPasswordReset(accounts, tokens, new OutboxPasswordResetNotifier()),
+    requestDesktopPasswordReset: new RequestPasswordReset(accounts, tokens, new DesktopPasswordResetNotifier()),
     resetPassword: new ResetPassword(accounts, tokens, hasher),
     changePassword: new ChangePassword(accounts, hasher),
     requestEmailVerification: new RequestEmailVerification(

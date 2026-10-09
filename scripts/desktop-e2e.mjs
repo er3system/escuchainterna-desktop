@@ -32,7 +32,7 @@ const errors = [];
 
 async function register(context, name, email, drive = false) {
   const page = await context.newPage();
-  page.on('pageerror', error => errors.push(error.message));
+  page.on('pageerror', error => errors.push({ page: new URL(page.url()).pathname, message: error.message }));
   await page.goto(`${server.origin}/registro`, { waitUntil: 'networkidle' });
   await page.locator('#registro-nombre').fill(name);
   await page.locator('#registro-email').fill(email);

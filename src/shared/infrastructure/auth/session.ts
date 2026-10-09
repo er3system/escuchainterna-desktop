@@ -5,6 +5,7 @@ import { readRequiredSecret } from '../config/runtime';
 import { getDatabaseAdapter } from '../persistence/SqliteAdapter';
 
 const COOKIE_NAME = 'escuchainterna_session';
+const SESSION_TTL_SECONDS = 60 * 60 * 24 * 30;
 
 /**
  * Epoch de sesión del usuario (SEG-4). Se embebe en el token y se compara en cada
@@ -63,7 +64,7 @@ function sign(payload: string): string {
   return createHmac('sha256', sessionSecret()).update(payload).digest('hex');
 }
 
-export async function createSession(userId: string): Promise<void> {
+export async function createSession(userId: string, remember = true): Promise<void> {
   const payload = `${userId}.${await currentSessionEpoch(userId)}.${Date.now()}`;
   const token = `${payload}.${sign(payload)}`;
   const store = await cookies();
@@ -71,7 +72,7 @@ export async function createSession(userId: string): Promise<void> {
     httpOnly: true,
     sameSite: 'lax',
     path: '/',
-    maxAge: 60 * 60 * 24 * 30,
+    ...(remember ? { maxAge: SESSION_TTL_SECONDS } : {}),
   });
 }
 
@@ -88,6 +89,8 @@ export async function getSessionUserId(): Promise<string | null> {
   // usuario (SEG-4): tras un reset de contraseña deja de coincidir → cookie inválida.
   // Las cookies del formato anterior (sin epoch) ya no validan y obligan a re-login.
   const parts = payload.split('.');
+  const createdAt = Number(parts[2]);
+  if (parts.length !== 3 || !Number.isFinite(createdAt) || createdAt > Date.now() || Date.now() - createdAt > SESSION_TTL_SECONDS * 1000) return null;
   const userId = parts[0] ?? null;
   if (!userId) return null;
   const tokenEpoch = Number(parts[1]);
@@ -171,9 +174,9 @@ const TOTP_CHALLENGE_TTL_MS = 5 * 60 * 1000;
  * cookie temporal firmada (5 min) y se redirige a /login/totp. La sesión real
  * solo se crea cuando el código TOTP es válido.
  */
-export async function createTotpChallenge(userId: string): Promise<void> {
+export async function createTotpChallenge(userId: string, remember = false): Promise<void> {
   const expiresAt = Date.now() + TOTP_CHALLENGE_TTL_MS;
-  const payload = `${userId}.${expiresAt}`;
+  const payload = `${userId}.${expiresAt}.${remember ? '1' : '0'}`;
   const store = await cookies();
   store.set(TOTP_COOKIE_NAME, `${payload}.${sign(payload)}`, {
     httpOnly: true,
@@ -184,7 +187,7 @@ export async function createTotpChallenge(userId: string): Promise<void> {
 }
 
 /** Lee el reto TOTP vigente; null si no existe, está alterado o expiró. */
-export async function readTotpChallenge(): Promise<string | null> {
+async function readTotpChallengeDetails(): Promise<{ userId: string; remember: boolean } | null> {
   const store = await cookies();
   const token = store.get(TOTP_COOKIE_NAME)?.value;
   if (!token) return null;
@@ -194,12 +197,19 @@ export async function readTotpChallenge(): Promise<string | null> {
   const signature = token.slice(lastDot + 1);
   if (sign(payload) !== signature) return null;
 
-  const separator = payload.lastIndexOf('.');
-  if (separator < 0) return null;
-  const userId = payload.slice(0, separator);
-  const expiresAt = Number(payload.slice(separator + 1));
+  const [userId, expiry, remember, extra] = payload.split('.');
+  if (extra !== undefined || (remember !== undefined && remember !== '0' && remember !== '1')) return null;
+  const expiresAt = Number(expiry);
   if (!userId || !Number.isFinite(expiresAt) || expiresAt < Date.now()) return null;
-  return userId;
+  return { userId, remember: remember === '1' };
+}
+
+export async function readTotpChallenge(): Promise<string | null> {
+  return (await readTotpChallengeDetails())?.userId ?? null;
+}
+
+export async function readTotpRememberAccount(): Promise<boolean> {
+  return (await readTotpChallengeDetails())?.remember ?? false;
 }
 
 export async function clearTotpChallenge(): Promise<void> {

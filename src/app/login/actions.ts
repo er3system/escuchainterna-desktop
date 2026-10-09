@@ -11,6 +11,7 @@ import {
   createTotpChallenge,
   destroySession,
   readTotpChallenge,
+  readTotpRememberAccount,
 } from '@/shared/infrastructure/auth/session';
 import {
   clearLoginAttempts,
@@ -19,6 +20,7 @@ import {
 } from '@/shared/infrastructure/auth/loginAttempts';
 import { totpEnabled, verifyUserTotp } from '@/shared/infrastructure/auth/totp';
 import { getDatabaseAdapter } from '@/shared/infrastructure/persistence/SqliteAdapter';
+import { rememberAccount } from '@/shared/infrastructure/auth/rememberedAccount';
 
 export interface AuthFormState {
   error?: string;
@@ -42,6 +44,7 @@ async function destinationFor(userId: string): Promise<string> {
 export async function loginAction(_prev: AuthFormState, formData: FormData): Promise<AuthFormState> {
   const email = String(formData.get('email') ?? '').trim().toLowerCase();
   const password = String(formData.get('password') ?? '');
+  const remember = formData.get('rememberAccount') === 'yes';
 
   // Bloqueo por intentos (v3 §1.3): aplica ANTES de validar, sin revelar si
   // el correo existe.
@@ -69,11 +72,12 @@ export async function loginAction(_prev: AuthFormState, formData: FormData): Pro
   // Segundo factor: con TOTP activo NO se crea sesión todavía; se emite un
   // reto temporal firmado (5 min) y se pide el código.
   if (await totpEnabled(userId)) {
-    await createTotpChallenge(userId);
+    await createTotpChallenge(userId, remember);
     redirect('/login/totp');
   }
 
-  await createSession(userId);
+  await rememberAccount(email, remember);
+  await createSession(userId, remember);
   redirect(await destinationFor(userId));
 }
 
@@ -100,8 +104,10 @@ export async function verifyTotpAction(_prev: AuthFormState, formData: FormData)
   }
 
   await clearLoginAttempts(userRow.email);
+  const remember = await readTotpRememberAccount();
   await clearTotpChallenge();
-  await createSession(userId);
+  await rememberAccount(userRow.email, remember);
+  await createSession(userId, remember);
   redirect(await destinationFor(userId));
 }
 

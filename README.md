@@ -20,6 +20,10 @@ Descarga el instalador `.exe` desde [Releases](https://github.com/er3system/escu
 
 La primera vez crea tu cuenta local. Esta edición no tiene período de prueba ni suscripción. La cuenta y los expedientes pertenecen a esta instalación; no son una cuenta de la web. Usa el menú del programa para crear un respaldo y restaurarlo en otra instalación.
 
+Desde 0.8.1, **Recordar cuenta en esta PC** conserva tu correo y la sesión hasta 30 días. Al cerrar sesión tendrás que escribir la contraseña de nuevo; el correo seguirá disponible. Desmarca la casilla al iniciar sesión para olvidarlo. No se guarda la contraseña en texto ni en el navegador.
+
+Si olvidaste la clave, escribe tu correo en el inicio de sesión y pulsa **¿Olvidaste tu contraseña?** dentro del programa. Se abre un enlace local de un solo uso, válido durante una hora, para elegir una nueva clave. No requiere correo ni internet, conserva tus datos e invalida las sesiones anteriores. Usa un perfil de Windows personal: quien tenga acceso a ese perfil puede recuperar sus cuentas locales. [Detalles técnicos y verificación](docs/desktop-account-access.md).
+
 Desde 0.4.0 el registro permite elegir **Solo en esta PC** o **Preparar Google Drive**. Si ya tienes una consulta en Drive, recíbela antes de crear otra cuenta. El asistente detecta Mi unidad en Windows; el inicio de sesión de Google se realiza en Drive para escritorio.
 
 ## Servicios opcionales con claves propias

@@ -10,6 +10,7 @@ const { FolderSynchronization, workspaceFingerprint } = require('./synchronizati
 const { driveFolders } = require('./drive.cjs');
 const { randomUUID } = require('node:crypto');
 const { isConsentFolderSender, signConsentFolderSelection } = require('./consent-folder.cjs');
+const { isAccountRecoverySender, requestAccountRecovery } = require('./account-recovery.cjs');
 
 const smoke = process.argv.includes('--desktop-smoke');
 const smokeArgument = process.argv.find(value => value.startsWith('--desktop-smoke-dir='));
@@ -30,7 +31,8 @@ app.on('before-quit', event => {
   if (quitting) return;
   if (busy) { event.preventDefault(); return; }
   event.preventDefault(); quitting = true;
-  stopServer(server?.child).finally(() => app.quit());
+  const flush = window && !window.isDestroyed() ? window.webContents.session.cookies.flushStore() : Promise.resolve();
+  flush.catch(() => {}).then(() => stopServer(server?.child)).finally(() => app.quit());
 });
 
 async function openWebsite(value) {
@@ -267,6 +269,15 @@ function configureMenu() {
   ]));
 }
 
+async function recoverLocalAccount(email) {
+  if (busy) throw new Error('Hay otra operación de datos en curso.');
+  busy = true;
+  try {
+    const resetUrl = await requestAccountRecovery(server.origin, email, secrets.SESSION_SECRET);
+    await window.loadURL(resetUrl);
+  } finally { busy = false; }
+}
+
 async function smokeCheck() {
   const preferences = window.webContents.getLastWebPreferences();
   const renderer = await window.webContents.executeJavaScript('({title: document.title, text: document.body.innerText.slice(0, 1000), require: typeof require, process: typeof process})');
@@ -286,6 +297,10 @@ async function smokeCheck() {
   if (restored.DATA_ENCRYPTION_KEY !== secrets.DATA_ENCRYPTION_KEY || fs.readFileSync(upload, 'utf8') !== 'respaldo local') throw new Error('El respaldo no recuperó claves y archivos.');
   await restart();
   const deniedOutsideSync = await window.webContents.executeJavaScript("window.escuchaDesktop.synchronizationStatus().then(()=>false,()=>true)");
+  await window.loadURL(`${server.origin}/registro`);
+  const deniedRecoveryOutsideLogin = await window.webContents.executeJavaScript("window.escuchaDesktop.recoverLocalAccount('nobody@example.test').then(()=>false,()=>true)");
+  await window.loadURL(`${server.origin}/login`);
+  const recoveryBridge = await window.webContents.executeJavaScript("({ available: typeof window.escuchaDesktop.recoverLocalAccount === 'function', remember: !!document.querySelector('input[name=rememberAccount]') })");
   const sharedFolder = `${app.getPath('userData')}.drive`; fs.mkdirSync(sharedFolder);
   synchronization.connect(sharedFolder, 'smoke-sync-password-2026');
   await stopServer(server.child);
@@ -300,8 +315,8 @@ async function smokeCheck() {
   await restart();
   await window.loadURL(`${server.origin}/sincronizacion`);
   const syncBridge = await window.webContents.executeJavaScript('window.escuchaDesktop.synchronizationStatus()');
-  const result = { ok: preferences.sandbox && !preferences.nodeIntegration && preferences.contextIsolation && renderer.require === 'undefined' && renderer.process === 'undefined' && health.engine === 'sqlite' && counts.users === 0 && counts.patients === 0 && deniedOutsideSync && syncRestored && passwordProtected && syncBridge.connected && !syncBridge.pending,
-    electron: process.versions.electron, electronNode: process.versions.node, health, counts, renderer, security: { sandbox: preferences.sandbox, nodeIntegration: preferences.nodeIntegration, contextIsolation: preferences.contextIsolation }, backupRestored: true, synchronization: { encryptedRoundTrip: syncRestored, dpapiProtectedPassword: passwordProtected, nativeBridge: syncBridge.connected, rejectedOtherScreen: deniedOutsideSync } };
+  const result = { ok: preferences.sandbox && !preferences.nodeIntegration && preferences.contextIsolation && renderer.require === 'undefined' && renderer.process === 'undefined' && health.engine === 'sqlite' && counts.users === 0 && counts.patients === 0 && deniedOutsideSync && syncRestored && passwordProtected && syncBridge.connected && !syncBridge.pending && deniedRecoveryOutsideLogin && recoveryBridge.available && recoveryBridge.remember,
+    electron: process.versions.electron, electronNode: process.versions.node, health, counts, renderer, security: { sandbox: preferences.sandbox, nodeIntegration: preferences.nodeIntegration, contextIsolation: preferences.contextIsolation }, backupRestored: true, accountRecovery: { nativeBridge: recoveryBridge.available, rememberAccount: recoveryBridge.remember, rejectedOtherScreen: deniedRecoveryOutsideLogin }, synchronization: { encryptedRoundTrip: syncRestored, dpapiProtectedPassword: passwordProtected, nativeBridge: syncBridge.connected, rejectedOtherScreen: deniedOutsideSync } };
   fs.writeFileSync(path.join(app.getPath('userData'), 'desktop-smoke.json'), JSON.stringify(result, null, 2));
   if (!result.ok) throw new Error('La verificación empaquetada no pasó.');
   app.quit();
@@ -333,8 +348,14 @@ if (lock) app.whenReady().then(async () => {
   });
   configureMenu();
   configureSynchronizationIPC();
+  ipcMain.handle('desktop:recover-account', async (event, email) => {
+    if (!isAccountRecoverySender(event, window.webContents, server.origin)) throw new Error('La recuperación solo está disponible desde el inicio de sesión del programa.');
+    await recoverLocalAccount(email);
+  });
   window.once('ready-to-show', () => { if (!smoke) window.show(); });
   await window.loadURL(`${server.origin}/`);
+  const recoveryArgument = !smoke && process.argv.find(value => value.startsWith('--recover-local-account='));
+  if (recoveryArgument) await recoverLocalAccount(recoveryArgument.slice('--recover-local-account='.length));
   if (smoke) await smokeCheck();
 }).catch(async error => {
   if (smoke) fs.writeFileSync(path.join(app.getPath('userData'), 'desktop-smoke.json'), JSON.stringify({ ok: false, error: error.message }));

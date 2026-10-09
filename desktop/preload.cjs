@@ -1,5 +1,6 @@
 const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('escuchaDesktop', Object.freeze({
+  recoverLocalAccount: email => typeof email === 'string' && email.length <= 254 ? ipcRenderer.invoke('desktop:recover-account', email) : Promise.reject(new Error('Correo inválido.')),
   driveStatus: () => ipcRenderer.invoke('desktop:drive-status'),
   chooseConsentFolder: owner => typeof owner === 'string' && owner.length === 36 ? ipcRenderer.invoke('desktop:consent-folder', owner) : Promise.reject(new Error('Cuenta inválida.')),
   synchronizationStatus: () => ipcRenderer.invoke('desktop:sync-status'),

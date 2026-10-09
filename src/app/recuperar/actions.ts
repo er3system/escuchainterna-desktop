@@ -3,6 +3,8 @@
 import { createIdentityUseCases } from '@/contexts/identity/infrastructure/createIdentityUseCases';
 import { isProduction } from '@/shared/infrastructure/config/runtime';
 import { bumpSessionEpoch } from '@/shared/infrastructure/auth/session';
+import { getDatabaseAdapter } from '@/shared/infrastructure/persistence/SqliteAdapter';
+import { clearLoginAttempts } from '@/shared/infrastructure/auth/loginAttempts';
 
 export interface RequestResetState {
   /** Se envió (o se simuló enviar) el correo de recuperación. */
@@ -44,9 +46,14 @@ export async function resetPasswordAction(
   const confirmation = String(formData.get('confirmacion') ?? '');
   if (password !== confirmation) return { error: 'Las contraseñas no coinciden.' };
   try {
-    const userId = await createIdentityUseCases().resetPassword.reset(token, password);
-    // SEG-4: invalida cualquier sesión vigente del usuario tras el cambio de contraseña.
-    await bumpSessionEpoch(userId);
+    const db = getDatabaseAdapter();
+    await db.transaction(async () => {
+      const userId = await createIdentityUseCases().resetPassword.reset(token, password);
+      // Invalida sesiones anteriores y elimina el bloqueo de la clave olvidada.
+      await bumpSessionEpoch(userId);
+      const user = await db.queryRow<{ email: string }>('SELECT email FROM users WHERE id = ?', [userId]);
+      if (user) await clearLoginAttempts(user.email);
+    });
     return { done: true };
   } catch (error) {
     return { error: error instanceof Error ? error.message : 'No se pudo restablecer la contraseña.' };
